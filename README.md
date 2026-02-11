@@ -89,7 +89,7 @@ ___
 
 #### Frontend
 
-Frontendi poolt lahendatavad funktsionaalsused on UI, andmete sisestus, tulemuste visualiseerimine.
+Frontendi poolt lahendatavad funktsionaalsused on UI, andmete sisestus, andmete edastus backendile, tulemuste visualiseerimine.
 - Javascript
 - React raamistik
 - Tailwind CSS
@@ -98,13 +98,19 @@ Frontendi poolt lahendatavad funktsionaalsused on UI, andmete sisestus, tulemust
 - 
 #### Backend
 
-Backendis toimub äriloogika ja statistika funktsionaalsuste tagamine.
--Node.js + Ekspress? VÕI Python + FastAPI
+Backendis toimub äriloogika ja statistika arvutuste funktsionaalsuste tagamine (routes + controllers + services + database layer).
+- Node.js + Ekspress? VÕI Python + FastAPI
+- Teegid: simple-statistics + jStat
 
 #### Andmebaas
 
 :star2: SQLite
 Andmebaasi struktuur: ... 
+
+#### Turvalisus ja autentimine
+
+- JWT token
+- bcrypt paroolide hash-imiseks
 ___
 
 ### Edasiarendused tulevikus
