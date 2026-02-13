@@ -95,11 +95,12 @@ Frontendi poolt lahendatavad funktsionaalsused on UI, andmete sisestus, andmete 
 - Tailwind CSS
 - Chart.js/Recharts/Plotly (graafikute jaoks)
 - React Table
-- 
+
+  
 #### Backend
 
 Backendis toimub äriloogika ja statistika arvutuste funktsionaalsuste tagamine (routes + controllers + services + database layer).
-- Node.js + Ekspress? VÕI Python + FastAPI
+- Node.js + Express? VÕI Python + FastAPI
 - Teegid: simple-statistics + jStat
 
 #### Andmebaas
