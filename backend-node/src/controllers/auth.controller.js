@@ -1,4 +1,4 @@
-// For calling service on data from frontend and returning HTTP response
+// For calling services on the data from frontend and returning HTTP response
 import { registerUser, loginUser } from "../services/auth.service.js";
 
 const register = async (req, res) => {
@@ -31,4 +31,10 @@ const login = async (req, res) => {
   }
 };
 
-export { register, login };
+const getCurrentUser = async (req, res) => {
+  return res.status(200).json({
+    user: req.user,
+  });
+};
+
+export { register, login, getCurrentUser };

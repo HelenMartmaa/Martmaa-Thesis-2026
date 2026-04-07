@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import initDb from "./config/initDb.js";
 import authRoutes from "./routes/auth.routes.js";
 import db from "./config/db.js";
+import { authenticateToken } from "./middleware/auth.middleware.js"; // For testing middleware
 
 dotenv.config();
 
@@ -28,6 +29,14 @@ app.get("/api/debug/users", (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     res.json(rows);
+  });
+});
+
+/* For middleware testing;*/
+app.get("/api/protected", authenticateToken, (req, res) => {
+  res.json({
+    message: "You have access to this protected route.",
+    user: req.user,
   });
 });
 
