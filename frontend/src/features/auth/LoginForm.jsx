@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
 
 function LoginForm() {
   const { login } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -24,6 +26,7 @@ function LoginForm() {
 
     try {
       await login(formData);
+      navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.error || "Login failed.");
     }

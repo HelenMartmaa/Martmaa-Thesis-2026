@@ -1,14 +1,32 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
 import LoginPage from "../pages/public/LoginPage";
 import RegisterPage from "../pages/public/RegisterPage";
 import ProtectedRoute from "./ProtectedRoute";
-
-function DashboardPage() {
-  return <h1>Dashboard</h1>;
-}
+import useAuth from "../features/auth/useAuth";
 
 function HomePage() {
-  return <h1>Home page</h1>;
+  return (
+    <div>
+      <h1>Home page</h1>
+      <p>Welcome to HM BioStatLab.</p>
+      <nav>
+        <Link to="/login">Login</Link> | <Link to="/register">Register</Link> |{" "}
+        <Link to="/dashboard">Dashboard</Link>
+      </nav>
+    </div>
+  );
+}
+
+function DashboardPage() {
+  const { user, logout } = useAuth();
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>Logged in as: {user?.email}</p>
+      <button onClick={logout}>Logout</button>
+    </div>
+  );
 }
 
 function AppRouter() {

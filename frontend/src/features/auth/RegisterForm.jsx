@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import useAuth from "./useAuth";
 
 function RegisterForm() {
   const { register } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -27,14 +29,10 @@ function RegisterForm() {
 
     try {
       await register(formData);
-      setMessage("Registration successful. You can now sign in.");
-      setFormData({
-        email: "",
-        password: "",
-        repeatPassword: "",
-      });
+      setMessage("Registration successful! You can now sign in.");
+      navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed.");
+      setError(err.response?.data?.error || "Registration unsuccessful.");
     }
   };
 
