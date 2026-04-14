@@ -1,9 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import initDb from "./config/initDb.js";
 import authRoutes from "./routes/auth.routes.js";
-import db from "./config/db.js";
 import { authenticateToken } from "./middleware/auth.middleware.js"; // For testing middleware
 
 dotenv.config();
@@ -14,15 +12,13 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-initDb();
-
 app.get("/api/health", (req, res) => {
   res.json({ message: "Backend is running" });
 });
 
 app.use("/api/auth", authRoutes);
 
-/* For debugging users table:*/
+/* For debugging users table:
 app.get("/api/debug/users", (req, res) => {
   db.all("SELECT * FROM users", [], (err, rows) => {
     if (err) {
@@ -30,7 +26,7 @@ app.get("/api/debug/users", (req, res) => {
     }
     res.json(rows);
   });
-});
+});*/
 
 /* For middleware testing;*/
 app.get("/api/protected", authenticateToken, (req, res) => {
