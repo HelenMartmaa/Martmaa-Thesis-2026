@@ -3,24 +3,20 @@ import jwt from "jsonwebtoken";
 import { findUserByEmail, createUser } from "../repositories/auth.repository.js";
 
 // Logic for registering a new user
-const registerUser = async ({ email, password, repeatPassword }) => {
-  const normalizedEmail = email.trim().toLowerCase(); // normalizing email
+const registerUser = async ({ email, password }) => {
+  const normalizedEmail = email.trim().toLowerCase();
 
-  if (!normalizedEmail || !password || !repeatPassword) {
-    throw new Error("All fields are required."); // field control in registering
+  if (!normalizedEmail || !password) {
+    throw new Error("All fields are required.");
   }
 
-  if (password !== repeatPassword) {
-    throw new Error("Passwords do not match."); // password matching check
-  }
-
-  const existingUser = await findUserByEmail(normalizedEmail); // comparing email with existing users as email = username
+  const existingUser = await findUserByEmail(normalizedEmail);
 
   if (existingUser) {
     throw new Error("User with this email already exists.");
   }
 
-  const passwordHash = await bcrypt.hash(password, 10); // hashing password
+  const passwordHash = await bcrypt.hash(password, 10);
 
   const newUser = await createUser(normalizedEmail, passwordHash);
 

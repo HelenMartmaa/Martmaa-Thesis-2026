@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuth from "./useAuth";
+import useAuth from "../../features/auth/useAuth";
 
-function LoginForm() {
+function LoginForm({ successMessage }) {
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -13,56 +13,64 @@ function LoginForm() {
 
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = (event) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError("");
 
     try {
       await login(formData);
       navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.error || "Login failed.");
+    } catch (error) {
+      setError(error.response?.data?.error || "Login failed.");
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Sign In</h2>
+      <h3>Sign in</h3>
+
+      {successMessage && <p>{successMessage}</p>}
+      {error && <p>{error}</p>}
 
       <div>
-        <label htmlFor="email">Email</label>
+        <label htmlFor="login-email">Email</label>
         <input
-          id="email"
+          id="login-email"
           name="email"
           type="email"
           value={formData.email}
           onChange={handleChange}
-          required
+          autoComplete="email"
         />
       </div>
 
       <div>
-        <label htmlFor="password">Password</label>
+        <label htmlFor="login-password">Password</label>
         <input
-          id="password"
+          id="login-password"
           name="password"
           type="password"
           value={formData.password}
           onChange={handleChange}
-          required
+          autoComplete="current-password"
         />
       </div>
 
-      {error && <p>{error}</p>}
-
       <button type="submit">Sign In</button>
+
+      <div>
+        <button type="button" disabled>
+          Forgot password
+        </button>
+        <p>(This feature will be added later)</p>
+      </div>
     </form>
   );
 }

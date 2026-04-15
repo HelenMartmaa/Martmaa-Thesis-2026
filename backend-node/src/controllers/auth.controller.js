@@ -1,13 +1,16 @@
-// For calling services on the data from frontend and returning HTTP response
 import { registerUser, loginUser } from "../services/auth.service.js";
 
+// Handles registration request and returns HTTP response
 const register = async (req, res) => {
   try {
     const newUser = await registerUser(req.body);
 
     return res.status(201).json({
       message: "User registered successfully.",
-      user: newUser,
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+      },
     });
   } catch (error) {
     return res.status(400).json({
@@ -16,6 +19,7 @@ const register = async (req, res) => {
   }
 };
 
+// Handles login request and returns HTTP response
 const login = async (req, res) => {
   try {
     const result = await loginUser(req.body);
@@ -31,6 +35,7 @@ const login = async (req, res) => {
   }
 };
 
+// Returns currently authenticated user
 const getCurrentUser = async (req, res) => {
   return res.status(200).json({
     user: req.user,
