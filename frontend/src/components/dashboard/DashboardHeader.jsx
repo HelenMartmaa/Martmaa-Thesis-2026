@@ -11,7 +11,7 @@ function DashboardHeader() {
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-12">
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-10">
         {/* Mobile: hamburger button */}
         <div className="lg:hidden">
           <Button
@@ -30,16 +30,16 @@ function DashboardHeader() {
           <img
             src={heroLogo}
             alt="BioStatLab logo"
-            className="h-auto w-28 sm:w-32 lg:w-40"
+            className="h-auto w-50 sm:w-55 lg:w-58"
           />
         </div>
 
         {/* Desktop navigation */}
         <nav className="hidden flex-1 items-center justify-center gap-6 lg:flex">
           <div className="group relative">
-            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-m font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
               Planning
-              <span className="text-xs text-slate-500">nool</span>
+              <span className="text-xs text-slate-500">⮟</span>
             </button>
 
             <div className="invisible absolute left-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
@@ -59,9 +59,9 @@ function DashboardHeader() {
           </div>
 
           <div className="group relative">
-            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-300">
+            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-m font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
               Analysis
-              <span className="text-xs text-slate-500">nool</span>
+              <span className="text-xs text-slate-500">⮟</span>
             </button>
 
             <div className="invisible absolute left-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
