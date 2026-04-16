@@ -30,7 +30,7 @@ function DashboardHeader() {
           <img
             src={heroLogo}
             alt="BioStatLab logo"
-            className="h-auto w-50 sm:w-55 lg:w-58"
+            className="h-auto w-44 sm:w-48 lg:w-56"
           />
         </div>
 
