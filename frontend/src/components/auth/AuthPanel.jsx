@@ -2,17 +2,28 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import GuestModeNotice from "../guest/GuestModeNotice";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 function AuthPanel() {
+  // Controls which form is currently visible
   const [mode, setMode] = useState("login");
   const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
-  const showLogin = () => {
+  const handleShowLogin = () => {
     setMode("login");
   };
 
-  const showRegister = () => {
+  const handleShowRegister = () => {
     setMode("register");
     setSuccessMessage("");
   };
@@ -22,38 +33,59 @@ function AuthPanel() {
     setMode("login");
   };
 
-  const handleContinueAsGuest = () => {
-    navigate("/guest/analysis");
-  };
-
   return (
-    <div>
-      <div>
-        <button type="button" onClick={showLogin}>
-          Sign In
-        </button>
+    <Card className="rounded-3xl border-slate-200 shadow-lg">
+      <CardHeader className="space-y-3">
+        <CardTitle className="text-2xl">Welcome</CardTitle>
+        <CardDescription className="text-sm leading-6">
+          Sign in to save experiments and analyses, register for a new account,
+          or continue as a guest to use temporary analysis tools.
+        </CardDescription>
 
-        <button type="button" onClick={showRegister}>
-          Register
-        </button>
-      </div>
+        {/* Toggle buttons for switching between login and register */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant={mode === "login" ? "default" : "outline"}
+            onClick={handleShowLogin}
+          >
+            Sign In
+          </Button>
 
-      {mode === "login" && (
-        <LoginForm successMessage={successMessage} />
-      )}
+          <Button
+            type="button"
+            variant={mode === "register" ? "default" : "outline"}
+            onClick={handleShowRegister}
+          >
+            Register
+          </Button>
+        </div>
+      </CardHeader>
 
-      {mode === "register" && (
-        <RegisterForm onRegisterSuccess={handleRegisterSuccess} />
-      )}
+      <CardContent className="space-y-6">
+        {/* Renders one form at a time */}
+        {mode === "login" ? (
+          <LoginForm successMessage={successMessage} />
+        ) : (
+          <RegisterForm onRegisterSuccess={handleRegisterSuccess} />
+        )}
 
-      <div>
-        <p>Or continue without an account:</p>
+        <Separator />
 
-        <button type="button" onClick={handleContinueAsGuest}>
-          Continue as Guest
-        </button>
-      </div>
-    </div>
+        <div className="space-y-4">
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => navigate("/guest/analysis")}
+          >
+            Continue as Guest
+          </Button>
+
+          <GuestModeNotice />
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

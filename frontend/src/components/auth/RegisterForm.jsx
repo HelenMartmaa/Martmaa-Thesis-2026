@@ -1,5 +1,8 @@
 import { useState } from "react";
 import useAuth from "../../features/auth/useAuth";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 
 function RegisterForm({ onRegisterSuccess }) {
   const { register } = useAuth();
@@ -11,6 +14,7 @@ function RegisterForm({ onRegisterSuccess }) {
   });
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (event) => {
     setFormData((prev) => ({
@@ -23,7 +27,9 @@ function RegisterForm({ onRegisterSuccess }) {
     event.preventDefault();
     setError("");
 
-    if (!formData.email || !formData.password || !formData.confirmPassword) {
+    const trimmedEmail = formData.email.trim().toLowerCase();
+
+    if (!trimmedEmail || !formData.password || !formData.confirmPassword) {
       setError("All fields are required.");
       return;
     }
@@ -34,8 +40,11 @@ function RegisterForm({ onRegisterSuccess }) {
     }
 
     try {
+      setIsSubmitting(true);
+
+      // Sends registration data through AuthContext
       await register({
-        email: formData.email,
+        email: trimmedEmail,
         password: formData.password,
       });
 
@@ -48,52 +57,64 @@ function RegisterForm({ onRegisterSuccess }) {
       onRegisterSuccess();
     } catch (error) {
       setError(error.response?.data?.error || "Registration failed.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>Create account</h3>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
-      {error && <p>{error}</p>}
-
-      <div>
-        <label htmlFor="register-email">Email</label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="register-email">Email</Label>
+        <Input
           id="register-email"
           name="email"
           type="email"
           value={formData.email}
           onChange={handleChange}
           autoComplete="email"
+          placeholder="name@example.com"
+          required
         />
       </div>
 
-      <div>
-        <label htmlFor="register-password">Password</label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="register-password">Password</Label>
+        <Input
           id="register-password"
           name="password"
           type="password"
           value={formData.password}
           onChange={handleChange}
           autoComplete="new-password"
+          placeholder="Create a password"
+          required
         />
       </div>
 
-      <div>
-        <label htmlFor="register-confirm-password">Repeat password</label>
-        <input
+      <div className="space-y-2">
+        <Label htmlFor="register-confirm-password">Repeat password</Label>
+        <Input
           id="register-confirm-password"
           name="confirmPassword"
           type="password"
           value={formData.confirmPassword}
           onChange={handleChange}
           autoComplete="new-password"
+          placeholder="Repeat your password"
+          required
         />
       </div>
 
-      <button type="submit">Register</button>
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? "Creating account..." : "Register"}
+      </Button>
     </form>
   );
 }

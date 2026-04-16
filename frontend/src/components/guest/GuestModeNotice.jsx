@@ -1,13 +1,12 @@
 function GuestModeNotice() {
   return (
-    <section>
-      <h2>Guest Mode</h2>
-      <p>
-        You are currently using the application as a guest. Your data will not
-        be saved and will be lost when you leave this page or refresh the
-        browser.
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <p className="font-medium">Guest mode</p>
+      <p className="mt-1 leading-6">
+        Data entered in guest mode is temporary and will not be saved after
+        leaving the page or refreshing the session.
       </p>
-    </section>
+    </div>
   );
 }
 
