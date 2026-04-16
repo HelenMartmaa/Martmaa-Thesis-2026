@@ -1,16 +1,15 @@
-import useAuth from "../../features/auth/useAuth";
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
+import DashboardIntro from "../../components/dashboard/DashboardIntro";
 
+// Main dashboard page for authenticated users
 function DashboardPage() {
-  const { user, logout } = useAuth();
-
   return (
-    <main>
-      <h1>Dashboard</h1>
-      <p>Logged in as: {user?.email}</p>
+    <main className="min-h-screen bg-slate-50 text-slate-900">
+      <DashboardHeader />
 
-      <button type="button" onClick={logout}>
-        Logout
-      </button>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-12 lg:py-10">
+        <DashboardIntro />
+      </div>
     </main>
   );
 }

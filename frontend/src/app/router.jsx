@@ -22,9 +22,57 @@ function AppRouter() {
           }
         />
 
+				<Route
+					path="/planning/new"
+					element={
+						<ProtectedRoute>
+							<PlaceholderPage title="New Experiment" />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/planning/saved"
+					element={
+						<ProtectedRoute>
+							<PlaceholderPage title="Saved Experiments" />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/analysis/new"
+					element={
+						<ProtectedRoute>
+							<PlaceholderPage title="New Analysis" />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/analysis/saved"
+					element={
+						<ProtectedRoute>
+							<PlaceholderPage title="Saved Analyses" />
+						</ProtectedRoute>
+					}
+				/>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+//Until the real pags get developed, add placeholders
+function PlaceholderPage({ title }) {
+  return (
+    <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+      <div className="mx-auto max-w-5xl">
+        <h1 className="text-3xl font-bold">{title}</h1>
+        <p className="mt-3 text-slate-600">This page will be implemented next.</p>
+      </div>
+    </main>
   );
 }
 
