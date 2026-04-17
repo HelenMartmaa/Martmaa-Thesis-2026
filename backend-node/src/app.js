@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import { authenticateToken } from "./middleware/auth.middleware.js"; // For testing middleware
+import experimentRoutes from "./routes/experiment.routes.js";
 
 dotenv.config();
 
@@ -17,16 +18,7 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-
-/* For debugging users table:
-app.get("/api/debug/users", (req, res) => {
-  db.all("SELECT * FROM users", [], (err, rows) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(rows);
-  });
-});*/
+app.use("/api/experiments", experimentRoutes);
 
 /* For middleware testing;*/
 app.get("/api/protected", authenticateToken, (req, res) => {

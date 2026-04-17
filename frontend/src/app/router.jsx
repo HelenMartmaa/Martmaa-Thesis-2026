@@ -3,6 +3,8 @@ import HomePage from "../pages/public/HomePage";
 import GuestAnalysisPage from "../pages/public/GuestAnalysisPage";
 import DashboardPage from "../pages/private/DashboardPage";
 import ProtectedRoute from "./ProtectedRoute";
+import NewExperimentPage from "../pages/private/planning/NewExperimentPage";
+import SavedExperimentsPage from "../pages/private/planning/SavedExperimentsPage";
 /* import useAuth from "../features/auth/useAuth"; */
 
 
@@ -23,24 +25,6 @@ function AppRouter() {
         />
 
 				<Route
-					path="/planning/new"
-					element={
-						<ProtectedRoute>
-							<PlaceholderPage title="New Experiment" />
-						</ProtectedRoute>
-					}
-				/>
-
-				<Route
-					path="/planning/saved"
-					element={
-						<ProtectedRoute>
-							<PlaceholderPage title="Saved Experiments" />
-						</ProtectedRoute>
-					}
-				/>
-
-				<Route
 					path="/analysis/new"
 					element={
 						<ProtectedRoute>
@@ -58,13 +42,31 @@ function AppRouter() {
 					}
 				/>
 
+				<Route
+					path="/planning/new"
+					element={
+						<ProtectedRoute>
+							<NewExperimentPage />
+						</ProtectedRoute>
+					}
+				/>
+
+				<Route
+					path="/planning/saved"
+					element={
+						<ProtectedRoute>
+							<SavedExperimentsPage />
+						</ProtectedRoute>
+					}
+				/>
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
 
-//Until the real pags get developed, add placeholders
+// Adding placeholders until the pages get developed
 function PlaceholderPage({ title }) {
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
