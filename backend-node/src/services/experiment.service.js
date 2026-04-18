@@ -1,6 +1,7 @@
 import {
   createExperiment,
   getExperimentsByUserId,
+  getExperimentByIdAndUserId,
 } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new experiment
@@ -24,9 +25,26 @@ const createExperimentService = async ({ title, experimentType, description, use
   });
 };
 
+// Returns one experiment for the authenticated user
+const getExperimentByIdService = async (experimentId, userId) => {
+  const parsedId = Number(experimentId);
+
+  if (!parsedId || Number.isNaN(parsedId)) {
+    throw new Error("Invalid experiment id.");
+  }
+
+  const experiment = await getExperimentByIdAndUserId(parsedId, userId);
+
+  if (!experiment) {
+    throw new Error("Experiment not found.");
+  }
+
+  return experiment;
+};
+
 // Returns all experiments for one authenticated user
 const getUserExperimentsService = async (userId) => {
   return getExperimentsByUserId(userId);
 };
 
-export { createExperimentService, getUserExperimentsService };
+export { createExperimentService, getUserExperimentsService, getExperimentByIdService };

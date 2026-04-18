@@ -72,6 +72,7 @@ function NewExperimentForm() {
             <Input
               id="title"
               name="title"
+              aria-label="Enter the title for the experiment, required"
               value={formData.title}
               onChange={handleChange}
               placeholder="Enter experiment title"
@@ -84,6 +85,7 @@ function NewExperimentForm() {
             <select
               id="experimentType"
               name="experimentType"
+              aria-label="Choose experiment type, required"
               value={formData.experimentType}
               onChange={handleChange}
               className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
@@ -98,6 +100,7 @@ function NewExperimentForm() {
             <textarea
               id="description"
               name="description"
+              aria-label="Add a short description for the experiment, optional"
               value={formData.description}
               onChange={handleChange}
               placeholder="Add a short description of the experiment"

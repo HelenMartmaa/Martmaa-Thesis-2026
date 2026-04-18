@@ -1,6 +1,7 @@
 import {
   createExperimentService,
   getUserExperimentsService,
+	getExperimentByIdService,
 } from "../services/experiment.service.js";
 
 // Handles request for creating a new experiment
@@ -37,4 +38,22 @@ const getUserExperimentsController = async (req, res) => {
   }
 };
 
-export { createExperimentController, getUserExperimentsController };
+// Handles request for loading one experiment by id
+const getExperimentByIdController = async (req, res) => {
+  try {
+    const experiment = await getExperimentByIdService(
+      req.params.id,
+      req.user.userId
+    );
+
+    return res.status(200).json({
+      experiment,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      error: error.message,
+    });
+  }
+};
+
+export { createExperimentController, getUserExperimentsController, getExperimentByIdController };

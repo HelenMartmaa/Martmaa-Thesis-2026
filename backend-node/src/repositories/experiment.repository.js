@@ -20,4 +20,14 @@ const getExperimentsByUserId = async (userId) => {
   });
 };
 
-export { createExperiment, getExperimentsByUserId };
+// Returns one experiment by its id and owner user id
+const getExperimentByIdAndUserId = async (experimentId, userId) => {
+  return prisma.experiment.findFirst({
+    where: {
+      id: experimentId,
+      userId,
+    },
+  });
+};
+
+export { createExperiment, getExperimentsByUserId, getExperimentByIdAndUserId };

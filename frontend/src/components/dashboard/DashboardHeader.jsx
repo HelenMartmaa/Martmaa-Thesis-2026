@@ -27,11 +27,13 @@ function DashboardHeader() {
 
         {/* Logo: centered in mobile view, left in desktop view*/}
         <div className="flex flex-1 items-center justify-center lg:justify-start">
-          <img
-            src={heroLogo}
-            alt="BioStatLab logo"
-            className="h-auto w-44 sm:w-48 lg:w-56"
-          />
+          <Link to="/dashboard" aria-label="Go to dashboard" className="transition hover:opacity-90">
+            <img
+              src={heroLogo}
+              alt="BioStatLab logo"
+              className="h-auto w-44 sm:w-48 lg:w-56"
+            />
+          </Link>
         </div>
 
         {/* Desktop navigation */}

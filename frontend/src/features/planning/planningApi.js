@@ -22,4 +22,15 @@ const getSavedExperimentsRequest = async (token) => {
   return response.data;
 };
 
-export { createExperimentRequest, getSavedExperimentsRequest };
+// Loads one saved experiment by id
+const getExperimentByIdRequest = async (experimentId, token) => {
+  const response = await apiClient.get(`/experiments/${experimentId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+export { createExperimentRequest, getSavedExperimentsRequest, getExperimentByIdRequest };
