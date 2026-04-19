@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-// For token reading and checking, only in order token is accepted for further queries
+// For token reading and checking, only if token is accepted for further requests
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 

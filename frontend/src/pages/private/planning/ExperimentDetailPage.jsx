@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
-import { getExperimentByIdRequest } from "../../../features/planning/planningApi";
+import { getExperimentByIdRequest, deleteExperimentRequest } from "../../../features/planning/planningApi";
 import { Button } from "../../../components/ui/button";
 import BackToTopButton from "../../../components/common/BackToTopButton";
 import {
@@ -20,7 +20,31 @@ function ExperimentDetailPage() {
   const [experiment, setExperiment] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+	const [deleteError, setDeleteError] = useState("");
+	const [isDeleting, setIsDeleting] = useState(false);
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+	// FOr checking if the time for creating and updating experiment are the same
+	const hasBeeenUpdated = (experiment) => {
+		return experiment.updatedAt && experiment.updatedAt !== experiment.createdAt;
+	};
+
+	// For deleting existing experiment
+	const handleDelete = async () => {
+		try {
+			setIsDeleting(true);
+			setDeleteError("");
+
+			await deleteExperimentRequest(id, token);
+
+			navigate("/planning/saved");
+		} catch (err) {
+			setDeleteError(err.response?.data?.error || "Failed to delete experiment.");
+		} finally {
+			setIsDeleting(false);
+		}
+	};
 	// Formatting experiment type for better visual displayment
 	const formatExperimentType = (value) => {
 		if (value === "in_vivo") return "in vivo";
@@ -90,8 +114,36 @@ function ExperimentDetailPage() {
 						</div>
 
 						<div>
+							<span className="font-medium text-slate-900">Short description:</span>
+							<p className="mt-1">{experiment.description || "No description provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Aim:</span>
+							<p className="mt-1">{experiment.aim || "No aim provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Hypotheses:</span>
+							{experiment.hypotheses?.length ? (
+								<ul className="mt-2 list-disc space-y-2 pl-5">
+									{experiment.hypotheses.map((item) => (
+										<li key={item.id}>{item.hypothesisText}</li>
+									))}
+								</ul>
+							) : (
+								<p className="mt-1">No hypotheses provided.</p> // Hypotheses were added later and currently there are test experiments without them
+							)}
+						</div>
+
+						<div>
 							<span className="font-medium text-slate-900">Organism / subject:</span>{" "}
 							{experiment.organismName || "Not specified."}
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Status:</span>{" "}
+							{experiment.status}
 						</div>
 
 						<div>
@@ -119,11 +171,6 @@ function ExperimentDetailPage() {
 						</div>
 
 						<div>
-							<span className="font-medium text-slate-900">Status:</span>{" "}
-							{experiment.status}
-						</div>
-
-						<div>
 							<span className="font-medium text-slate-900">Resources:</span>
 							<p className="mt-1">{experiment.resourcesText || "No resources provided."}</p>
 						</div>
@@ -141,36 +188,69 @@ function ExperimentDetailPage() {
 						</div>
 
 						<div>
-							<span className="font-medium text-slate-900">Created at:</span>{" "}
-							{new Date(experiment.createdAt).toLocaleString()}
-						</div>
-
-						<div>
-							<span className="font-medium text-slate-900">Short description:</span>
-							<p className="mt-1">{experiment.description || "No description provided."}</p>
-						</div>
-
-						<div>
-							<span className="font-medium text-slate-900">Aim:</span>
-							<p className="mt-1">{experiment.aim || "No aim provided."}</p>
-						</div>
-
-						<div>
-							<span className="font-medium text-slate-900">Hypotheses:</span>
-							{experiment.hypotheses?.length ? (
-								<ul className="mt-2 list-disc space-y-2 pl-5">
-									{experiment.hypotheses.map((item) => (
-										<li key={item.id}>{item.hypothesisText}</li>
-									))}
-								</ul>
-							) : (
-								<p className="mt-1">No hypotheses provided.</p>
+							<p>
+								<span className="font-medium text-slate-900">Created at:</span>{" "}
+								{new Date(experiment.createdAt).toLocaleString()}
+							</p>
+							
+							{hasBeeenUpdated(experiment) && (
+								<p>
+									<span className="font-medium text-slate-900">Updated at:</span>{" "}
+									{new Date(experiment.updatedAt).toLocaleString()}
+								</p>
 							)}
 						</div>
 
 					</CardContent>
 				</Card>
+			)}			
+
+			{showDeleteConfirm && (
+				<div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+					<p className="text-sm font-medium text-red-800">
+						Are you sure you want to delete this experiment?
+{/* 						{window.scrollTo({ bottom: 0, behavior: "smooth" })} */}
+					</p>
+					<p className="mt-1 text-sm text-red-700">
+						This action cannot be undone.
+					</p>
+					<div className="mt-4 flex flex-col gap-3 sm:flex-row">
+						<Button
+							type="button"
+							variant="outline"
+							className="border-red-300 text-red-700 hover:bg-red-100"
+							onClick={handleDelete}
+							disabled={isDeleting}
+						>
+							{isDeleting ? "Deleting..." : "Yes, delete experiment"}
+						</Button>
+
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setShowDeleteConfirm(false)}
+							disabled={isDeleting}
+						>
+							Cancel
+						</Button>
+					</div>
+				</div>
 			)}
+
+			<div className="flex flex-col gap-3 sm:flex-row">
+				<Button asChild variant="outline">
+					<Link to={`/planning/${id}/edit`}>Update Experiment</Link>
+				</Button>
+
+				<Button
+					type="button"
+					variant="destructive"
+					onClick={() => setShowDeleteConfirm(true)}
+				>
+					Delete Experiment
+				</Button>
+			</div>
+
 			<BackToTopButton />
     </section>
   );

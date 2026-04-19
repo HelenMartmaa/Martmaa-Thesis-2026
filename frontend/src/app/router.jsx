@@ -6,6 +6,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import NewExperimentPage from "../pages/private/planning/NewExperimentPage";
 import SavedExperimentsPage from "../pages/private/planning/SavedExperimentsPage";
 import ExperimentDetailPage from "../pages/private/planning/ExperimentDetailPage";
+import EditExperimentPage from "../pages/private/planning/EditExperimentPage";
 import PrivateLayout from "../layouts/PrivateLayout";
 /* import useAuth from "../features/auth/useAuth"; */
 
@@ -28,6 +29,7 @@ function AppRouter() {
 					<Route path="/planning/new" element={<NewExperimentPage />} />
 					<Route path="/planning/saved" element={<SavedExperimentsPage/>} />
 					<Route path="/planning/:id" element={<ExperimentDetailPage />} />
+					<Route path="/planning/:id/edit" element={<EditExperimentPage />} />
 				{/* 	if analysis pages are done add analysis routes */}
 				</Route>	
 

@@ -67,4 +67,86 @@ const getExperimentByIdAndUserId = async (experimentId, userId) => {
   });
 };
 
-export { createExperiment, getExperimentsByUserId, getExperimentByIdAndUserId };
+// Updates one specific experiment and replaces its hypotheses
+const updateExperimentByIdAndUserId = async ({
+  experimentId,
+  userId,
+  title,
+  description,
+  aim,
+  experimentType,
+  organismName,
+  startDate,
+  endDate,
+  scheduleNotes,
+  methodsText,
+  resourcesText,
+  treatmentPlanText,
+  notes,
+  status,
+  hypotheses,
+}) => {
+  const existingExperiment = await prisma.experiment.findFirst({
+    where: {
+      id: experimentId,
+      userId,
+    },
+  });
+
+  if (!existingExperiment) {
+    throw new Error("Experiment not found.");
+  }
+
+  return prisma.experiment.update({
+    where: {
+      id: experimentId,
+    },
+    data: {
+      title,
+      description,
+      aim,
+      experimentType,
+      organismName,
+      startDate,
+      endDate,
+      scheduleNotes,
+      methodsText,
+      resourcesText,
+      treatmentPlanText,
+      notes,
+      status,
+      // Replace hypotheses fully on update for simpler state management
+      hypotheses: {
+        deleteMany: {},
+        create: hypotheses.map((hypothesisText) => ({
+          hypothesisText,
+        })),
+      },
+    },
+    include: {
+      hypotheses: true,
+    },
+  });
+};
+
+// Deletes specific one experiment owned by the authenticated user
+const deleteExperimentByIdAndUserId = async (experimentId, userId) => {
+  const existingExperiment = await prisma.experiment.findFirst({
+    where: {
+      id: experimentId,
+      userId,
+    },
+  });
+
+  if (!existingExperiment) {
+    throw new Error("Experiment not found.");
+  }
+
+  return prisma.experiment.delete({
+    where: {
+      id: experimentId,
+    },
+  });
+};
+
+export { createExperiment, getExperimentsByUserId, getExperimentByIdAndUserId, updateExperimentByIdAndUserId, deleteExperimentByIdAndUserId };

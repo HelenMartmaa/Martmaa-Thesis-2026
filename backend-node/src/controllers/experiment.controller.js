@@ -2,6 +2,8 @@ import {
   createExperimentService,
   getUserExperimentsService,
 	getExperimentByIdService,
+  updateExperimentService,
+  deleteExperimentService,
 } from "../services/experiment.service.js";
 
 // Handles request for creating a new experiment
@@ -56,4 +58,39 @@ const getExperimentByIdController = async (req, res) => {
   }
 };
 
-export { createExperimentController, getUserExperimentsController, getExperimentByIdController };
+// Handles request for updating one experiment by id
+const updateExperimentController = async (req, res) => {
+  try {
+    const experiment = await updateExperimentService({
+      experimentId: req.params.id,
+      userId: req.user.userId,
+      ...req.body,
+    });
+
+    return res.status(200).json({
+      message: "Experiment updated successfully.",
+      experiment,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+};
+
+// Handles request for deleting one experiment by id
+const deleteExperimentController = async (req, res) => {
+  try {
+    await deleteExperimentService(req.params.id, req.user.userId);
+
+    return res.status(200).json({
+      message: "Experiment deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+};
+
+export { createExperimentController, getUserExperimentsController, getExperimentByIdController, updateExperimentController, deleteExperimentController };

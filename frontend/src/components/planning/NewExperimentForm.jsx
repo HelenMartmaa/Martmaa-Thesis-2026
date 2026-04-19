@@ -1,31 +1,42 @@
 import { useEffect, useRef, useState } from "react";
 import useAuth from "../../features/auth/useAuth";
-import { createExperimentRequest } from "../../features/planning/planningApi";
+import { createExperimentRequest, updateExperimentRequest } from "../../features/planning/planningApi";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 // Form for creating a new experiment
-function NewExperimentForm() {
+// Shared form for both creating and editing experiments
+function NewExperimentForm({
+  mode = "create",
+  initialData = null,
+  experimentId = null,
+  onSuccess = null,
+}) {
   const { token } = useAuth();
-	
-	const [formData, setFormData] = useState({
-		title: "",
-		description: "",
-		aim: "",
-		experimentType: "in_vivo",
-		organismName: "",
-		startDate: "",
-		endDate: "",
-		scheduleNotes: "",
-		methodsText: "",
-		resourcesText: "",
-		treatmentPlanText: "",
-		notes: "",
-		status: "planned",
-		hypotheses: [""],
+
+	const getInitialFormData = () => ({
+		title: initialData?.title || "",
+		description: initialData?.description || "",
+		aim: initialData?.aim || "",
+		experimentType: initialData?.experimentType || "in_vivo",
+		organismName: initialData?.organismName || "",
+		completed: initialData?.status === "completed" ? "yes" : "no",
+		startDate: initialData?.startDate ? initialData.startDate.split("T")[0] : "",
+		endDate: initialData?.endDate ? initialData.endDate.split("T")[0] : "",
+		scheduleNotes: initialData?.scheduleNotes || "",
+		methodsText: initialData?.methodsText || "",
+		resourcesText: initialData?.resourcesText || "",
+		treatmentPlanText: initialData?.treatmentPlanText || "",
+		notes: initialData?.notes || "",
+		hypotheses:
+			initialData?.hypotheses?.length > 0
+				? initialData.hypotheses.map((item) => item.hypothesisText)
+				: [""],
 	});
+	
+	const [formData, setFormData] = useState(getInitialFormData);
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -37,22 +48,7 @@ function NewExperimentForm() {
 
 	// Resets form fields and validation state
 	const resetForm = ({ clearSuccess = true } = {}) => {
-		setFormData({
-			title: "",
-			description: "",
-			aim: "",
-			experimentType: "in_vivo",
-			organismName: "",
-			completed: "no",
-			startDate: "",
-			endDate: "",
-			scheduleNotes: "",
-			methodsText: "",
-			resourcesText: "",
-			treatmentPlanText: "",
-			notes: "",
-			hypotheses: [""],
-		});
+		setFormData(getInitialFormData());
 
 		setError("");
 		setStartDateError("");
@@ -226,7 +222,19 @@ function NewExperimentForm() {
 				status: isCompleted ? "completed" : "planned",
 			};
 
-			await createExperimentRequest(payload, token);
+			if (mode === "edit" && experimentId) {
+				await updateExperimentRequest(experimentId, payload, token);
+				setSuccessMessage("Experiment updated successfully.");
+
+				if (onSuccess) {
+					onSuccess();
+				}
+			} else {
+				await createExperimentRequest(payload, token);
+				resetForm({ clearSuccess: false });
+				setSuccessMessage("Experiment created successfully.");
+				setShowForm(false);
+			}
 
 			setSuccessMessage("Experiment created successfully.");
 
@@ -250,6 +258,12 @@ function NewExperimentForm() {
 			successRef.current.focus();
 		}
 	}, [successMessage]);
+
+	useEffect(() => {
+		if (initialData) {
+			setFormData(getInitialFormData());
+		}
+	}, [initialData]);
 
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
@@ -315,7 +329,7 @@ function NewExperimentForm() {
 								onChange={handleChange}
 								maxLength={1000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-								placeholder="State the aim of this study and research question(s)"
+								placeholder="State the aim of this experiment and research question(s)"
 								required
 							/>
 							<CharacterCount current={(formData.aim || "").length} max={1000} />
@@ -367,6 +381,7 @@ function NewExperimentForm() {
 										type="radio"
 										name="experimentType"
 										value="in_vivo"
+										aria-label="Experiment type is in vivo"
 										checked={formData.experimentType === "in_vivo"}
 										onChange={handleChange}
 									/>
@@ -378,6 +393,7 @@ function NewExperimentForm() {
 										type="radio"
 										name="experimentType"
 										value="in_vitro"
+										aria-label="Experiment type is in vitro"
 										checked={formData.experimentType === "in_vitro"}
 										onChange={handleChange}
 									/>
@@ -425,7 +441,7 @@ function NewExperimentForm() {
 						</div>
 
 						<div className="space-y-2">
-							<Label htmlFor="organismName">Organism / subject name
+							<Label htmlFor="organismName">Organism / subject
 								<FieldRequirement required />
 							</Label>
 							<Input
@@ -567,7 +583,13 @@ function NewExperimentForm() {
 
 						<div className="flex flex-col gap-3 sm:flex-row">
 							<Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-								{isSubmitting ? "Saving..." : "Create Experiment"}
+								{isSubmitting 
+									? mode === "edit"
+										? "Updating..." 
+										: "Saving ..."
+									: mode === "edit"
+									? "Update Experiment"
+									: "Create Experiment"}
 							</Button>
 
 							<Button

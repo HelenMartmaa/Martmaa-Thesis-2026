@@ -33,4 +33,26 @@ const getExperimentByIdRequest = async (experimentId, token) => {
   return response.data;
 };
 
-export { createExperimentRequest, getSavedExperimentsRequest, getExperimentByIdRequest };
+// Sends an experiment update to backend
+const updateExperimentRequest = async (experimentId, data, token) => {
+  const response = await apiClient.put(`/experiments/${experimentId}`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+// Deletes one experiment by id
+const deleteExperimentRequest = async (experimentId, token) => {
+  const response = await apiClient.delete(`/experiments/${experimentId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+export { createExperimentRequest, getSavedExperimentsRequest, getExperimentByIdRequest, updateExperimentRequest, deleteExperimentRequest };

@@ -2,6 +2,8 @@ import {
   createExperiment,
   getExperimentsByUserId,
   getExperimentByIdAndUserId,
+  updateExperimentByIdAndUserId,
+  deleteExperimentByIdAndUserId,
 } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new experiment
@@ -110,4 +112,105 @@ const getUserExperimentsService = async (userId) => {
   return getExperimentsByUserId(userId);
 };
 
-export { createExperimentService, getUserExperimentsService, getExperimentByIdService };
+// Validates and updates one experiment
+const updateExperimentService = async ({
+  experimentId,
+  userId,
+  title,
+  description,
+  aim,
+  experimentType,
+  organismName,
+  startDate,
+  endDate,
+  scheduleNotes,
+  methodsText,
+  resourcesText,
+  treatmentPlanText,
+  notes,
+  status,
+  hypotheses,
+}) => {
+  const parsedId = Number(experimentId);
+
+  if (!parsedId || Number.isNaN(parsedId)) {
+    throw new Error("Invalid experiment id.");
+  }
+
+  const trimmedTitle = title?.trim();
+  const trimmedDescription = description?.trim();
+  const trimmedAim = aim?.trim();
+  const normalizedType = experimentType?.trim();
+  const trimmedOrganismName = organismName?.trim();
+  const trimmedMethodsText = methodsText?.trim();
+  const normalizedStatus = status?.trim();
+
+  if (
+    !trimmedTitle ||
+    !trimmedDescription ||
+    !trimmedAim ||
+    !normalizedType ||
+    !trimmedOrganismName ||
+    !trimmedMethodsText ||
+    !normalizedStatus
+  ) {
+    throw new Error(
+      "Title, description, aim, experiment type, organism name, methods, and status are required."
+    );
+  }
+
+  if (!["in_vivo", "in_vitro"].includes(normalizedType)) {
+    throw new Error("Experiment type must be either 'in_vivo' or 'in_vitro'.");
+  }
+
+  if (!["planned", "completed"].includes(normalizedStatus)) {
+    throw new Error("Status must be either 'planned' or 'completed'.");
+  }
+
+  const cleanedHypotheses = (hypotheses || [])
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (cleanedHypotheses.length === 0) {
+    throw new Error("At least one hypothesis is required.");
+  }
+
+  const parsedStartDate = startDate ? new Date(startDate) : null;
+  const parsedEndDate = endDate ? new Date(endDate) : null;
+
+  if (parsedStartDate && parsedEndDate && parsedEndDate < parsedStartDate) {
+    throw new Error("End date cannot be earlier than start date.");
+  }
+
+  return updateExperimentByIdAndUserId({
+    experimentId: parsedId,
+    userId,
+    title: trimmedTitle,
+    description: trimmedDescription,
+    aim: trimmedAim,
+    experimentType: normalizedType,
+    organismName: trimmedOrganismName,
+    startDate: parsedStartDate,
+    endDate: parsedEndDate,
+    scheduleNotes: scheduleNotes?.trim() || null,
+    methodsText: trimmedMethodsText,
+    resourcesText: resourcesText?.trim() || null,
+    treatmentPlanText: treatmentPlanText?.trim() || null,
+    notes: notes?.trim() || null,
+    status: normalizedStatus,
+    hypotheses: cleanedHypotheses,
+  });
+};
+
+// Deletes one experiment for the authenticated user
+const deleteExperimentService = async (experimentId, userId) => {
+  const parsedId = Number(experimentId);
+
+  if (!parsedId || Number.isNaN(parsedId)) {
+    throw new Error("Invalid experiment id.");
+  }
+
+  return deleteExperimentByIdAndUserId(parsedId, userId);
+};
+
+export { createExperimentService, getUserExperimentsService, getExperimentByIdService, updateExperimentService, deleteExperimentService };
