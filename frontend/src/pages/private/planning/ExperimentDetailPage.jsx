@@ -82,21 +82,67 @@ function ExperimentDetailPage() {
 						</div>
 
 						<div>
+							<span className="font-medium text-slate-900">Organism / subject:</span>{" "}
+							{experiment.organismName || "Not specified."}
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Start date:</span>{" "}
+							{experiment.startDate
+								? new Date(experiment.startDate).toLocaleDateString()
+								: "Not specified."}
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">End date:</span>{" "}
+							{experiment.endDate
+								? new Date(experiment.endDate).toLocaleDateString()
+								: "Not specified."}
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Schedule notes:</span>
+							<p className="mt-1">{experiment.scheduleNotes || "No schedule notes provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Methods:</span>
+							<p className="mt-1">{experiment.methodsText || "No methods provided."}</p>
+						</div>
+
+						<div>
 							<span className="font-medium text-slate-900">Status:</span>{" "}
 							{experiment.status}
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Resources:</span>
+							<p className="mt-1">{experiment.resourcesText || "No resources provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Treatment plan:</span>
+							<p className="mt-1">
+								{experiment.treatmentPlanText || "No treatment plan provided."}
+							</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">General notes:</span>
+							<p className="mt-1">{experiment.notes || "No additional notes provided."}</p>
 						</div>
 
 						<div>
 							<span className="font-medium text-slate-900">Created at:</span>{" "}
 							{new Date(experiment.createdAt).toLocaleString()}
 						</div>
-
+{/* 
 						<div>
 							<span className="font-medium text-slate-900">Description:</span>
 							<p className="mt-1">
 								{experiment.description || "No description provided."}
 							</p>
-						</div>
+						</div> */}
 					</CardContent>
 				</Card>
 			)}

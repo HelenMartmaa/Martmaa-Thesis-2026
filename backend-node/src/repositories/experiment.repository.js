@@ -1,18 +1,39 @@
 import prisma from "../config/prisma.js";
 
 // Creates a new experiment that will be saved in database
-const createExperiment = async ({ title, experimentType, description, userId }) => {
+const createExperiment = async ({
+  title,
+  experimentType,
+  organismName,
+  startDate,
+  endDate,
+  scheduleNotes,
+  methodsText,
+  resourcesText,
+  treatmentPlanText,
+  notes,
+  status,
+  userId,
+}) => {
   return prisma.experiment.create({
     data: {
       title,
       experimentType,
-      description,
+      organismName,
+      startDate,
+      endDate,
+      scheduleNotes,
+      methodsText,
+      resourcesText,
+      treatmentPlanText,
+      notes,
+      status,
       userId,
     },
   });
 };
 
-// Returns all experiments (if any) that belong to one specific user, displayed starting from the newest
+// Returns all experiments that belong to one user
 const getExperimentsByUserId = async (userId) => {
   return prisma.experiment.findMany({
     where: { userId },

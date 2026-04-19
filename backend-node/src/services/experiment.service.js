@@ -5,22 +5,57 @@ import {
 } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new experiment
-const createExperimentService = async ({ title, experimentType, description, userId }) => {
+const createExperimentService = async ({
+  title,
+  experimentType,
+  organismName,
+  startDate,
+  endDate,
+  scheduleNotes,
+  methodsText,
+  resourcesText,
+  treatmentPlanText,
+  notes,
+  status,
+  userId,
+}) => {
   const trimmedTitle = title?.trim();
-  const trimmedType = experimentType?.trim();
+  const normalizedType = experimentType?.trim();
+  const normalizedStatus = status?.trim();
 
-  if (!trimmedTitle || !trimmedType) {
-    throw new Error("Title and experiment type are required.");
+  if (!trimmedTitle || !normalizedType || !normalizedStatus) {
+    throw new Error("Title, experiment type, and status are required.");
   }
 
-  if (!["in vivo", "in vitro"].includes(trimmedType)) {
-    throw new Error("Experiment type must be either 'in vivo' or 'in vitro'.");
+  if (!["in_vivo", "in_vitro"].includes(normalizedType)) {
+    throw new Error("Experiment type must be either 'in_vivo' or 'in_vitro'.");
+  }
+
+  if (!["planned", "completed"].includes(normalizedStatus)) {
+    throw new Error("Status must be either 'planned' or 'completed'.");
+  }
+
+  // Convert HTML date input strings into Date objects for Prisma
+  const parsedStartDate = startDate ? new Date(startDate) : null;
+  const parsedEndDate = endDate ? new Date(endDate) : null;
+
+  // End date check, can't be before start date
+  if (parsedStartDate && parsedEndDate && parsedEndDate < parsedStartDate) {
+    throw new Error("End date cannot be eralier than start date.");
   }
 
   return createExperiment({
     title: trimmedTitle,
-    experimentType: trimmedType,
-    description: description?.trim() || null,
+    experimentType: normalizedType,
+    organismName: organismName?.trim() || null,
+    startDate: parsedStartDate,
+    endDate: parsedEndDate,
+    scheduleNotes: scheduleNotes?.trim() || null,
+    methodsText: methodsText?.trim() || null,
+    resourcesText: resourcesText?.trim() || null,
+    treatmentPlanText: treatmentPlanText?.trim() || null,
+    notes: notes?.trim() || null,
+    status: normalizedStatus,
     userId,
   });
 };

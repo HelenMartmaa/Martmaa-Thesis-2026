@@ -1,4 +1,5 @@
 import NewExperimentForm from "../../../components/planning/NewExperimentForm";
+import BackToTopButton from "../../../components/common/BackToTopButton";
 
 // Page for creating a new experiment
 function NewExperimentPage() {
@@ -15,6 +16,7 @@ function NewExperimentPage() {
       </div>
 
       <NewExperimentForm />
+			<BackToTopButton />
     </section>
   );
 }

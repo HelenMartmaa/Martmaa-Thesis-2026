@@ -24,15 +24,73 @@ model User {
 
 // Experiments table for planning module
 model Experiment {
-  id             Int      @id @default(autoincrement())
-  title          String
-  experimentType String   @map("experiment_type")
-  description    String?
-  status         String   @default("draft")
-  createdAt      DateTime @default(now()) @map("created_at")
+  id                Int       @id @default(autoincrement())
+  userId            Int       @map("user_id")
+  title             String    @db.VarChar(255)
+  experimentType    String    @map("experiment_type") @db.VarChar(20)
+  organismName      String?   @map("organism_name") @db.VarChar(255)
+  startDate         DateTime? @map("start_date") @db.Date
+  endDate           DateTime? @map("end_date") @db.Date
+  scheduleNotes     String?   @map("schedule_notes")
+  methodsText       String?   @map("methods_text")
+  resourcesText     String?   @map("resources_text")
+  treatmentPlanText String?   @map("treatment_plan_text")
+  notes             String?
+  status            String    @db.VarChar(50)
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
 
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groups      ExperimentGroup[]
+  subjects    ExperimentSubject[]
+  teamMembers ExperimentTeamMember[]
 
   @@map("experiments")
+}
+
+// ExperimentGroup table for adding details of experiment subject groups to planned experiment
+model ExperimentGroup {
+  id           Int      @id @default(autoincrement())
+  experimentId Int      @map("experiment_id")
+  name         String   @db.VarChar(255)
+  groupType    String   @map("group_type") @db.VarChar(50)
+  description  String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  experiment Experiment          @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  subjects   ExperimentSubject[]
+
+  @@map("experiment_groups")
+}
+
+//ExperimentSubject table for adding details of experiment subject to planned experiment
+model ExperimentSubject {
+  id           Int      @id @default(autoincrement())
+  experimentId Int      @map("experiment_id")
+  groupId      Int?     @map("group_id")
+  subjectCode  String   @map("subject_code") @db.VarChar(255)
+  sex          String?  @db.VarChar(50)
+  genotype     String?  @db.VarChar(255)
+  subjectType  String?  @map("subject_type") @db.VarChar(100)
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  experiment Experiment       @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  group      ExperimentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@map("experiment_subjects")
+}
+
+// ExperimentTeamMember table for adding details of people and their roles in the experiment
+model ExperimentTeamMember {
+  id           Int      @id @default(autoincrement())
+  experimentId Int      @map("experiment_id")
+  memberName   String   @map("member_name") @db.VarChar(255)
+  memberRole   String?  @map("member_role") @db.VarChar(255)
+  memberEmail  String?  @map("member_email") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@map("experiment_team_members")
 }
