@@ -3,6 +3,8 @@ import prisma from "../config/prisma.js";
 // Creates a new experiment that will be saved in database
 const createExperiment = async ({
   title,
+  description,
+  aim,
   experimentType,
   organismName,
   startDate,
@@ -13,11 +15,14 @@ const createExperiment = async ({
   treatmentPlanText,
   notes,
   status,
+  hypotheses,
   userId,
 }) => {
   return prisma.experiment.create({
     data: {
       title,
+      description,
+      aim,
       experimentType,
       organismName,
       startDate,
@@ -29,6 +34,14 @@ const createExperiment = async ({
       notes,
       status,
       userId,
+      hypotheses: {
+        create: hypotheses.map((hypothesisText) => ({
+          hypothesisText,
+        })),
+      },
+    },
+    include: {
+      hypotheses: true,
     },
   });
 };
@@ -47,6 +60,9 @@ const getExperimentByIdAndUserId = async (experimentId, userId) => {
     where: {
       id: experimentId,
       userId,
+    },
+    include: {
+      hypotheses: true,
     },
   });
 };

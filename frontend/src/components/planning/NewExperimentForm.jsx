@@ -10,26 +10,110 @@ import { Label } from "../ui/label";
 function NewExperimentForm() {
   const { token } = useAuth();
 	
-  const [formData, setFormData] = useState({
-    title: "",
-    experimentType: "in_vivo",
-    organismName: "",
-    startDate: "",
-    endDate: "",
-    scheduleNotes: "",
-    methodsText: "",
-    resourcesText: "",
-    treatmentPlanText: "",
-    notes: "",
-    status: "planned",
-  });
+	const [formData, setFormData] = useState({
+		title: "",
+		description: "",
+		aim: "",
+		experimentType: "in_vivo",
+		organismName: "",
+		startDate: "",
+		endDate: "",
+		scheduleNotes: "",
+		methodsText: "",
+		resourcesText: "",
+		treatmentPlanText: "",
+		notes: "",
+		status: "planned",
+		hypotheses: [""],
+	});
 
-	const today = new Date().toISOString().split("T")[0];
-	const successRef = useRef(null);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+	const [startDateError, setStartDateError] = useState("");
+	const [endDateError, setEndDateError] = useState("");
 	const [dateError, setDateError] = useState("");
+
+	const successRef = useRef(null);
+	// Used for validating date inputs against the current day
+	const today = new Date().toISOString().split("T")[0];
+	const isCompleted = formData.completed === "yes";
+
+	function FieldRequirement ({ required }) {
+		return (
+			<span className="text-slate-500">
+				{" "}
+				({required ? "required" : "optional"})
+			</span>
+		);
+	}
+
+	// Hypothesis control
+	const handleHypothesisChange = (index, value) => {
+		const updatedHypotheses = [...formData.hypotheses];
+		updatedHypotheses[index] = value;
+
+		setFormData((prev) => ({
+			...prev,
+			hypotheses: updatedHypotheses,
+		}));
+	};
+
+	const addHypothesisField = () => {
+		setFormData((prev) => ({
+			...prev,
+			hypotheses: [...prev.hypotheses, ""],
+		}));
+	};
+
+	const removeHypothesisField = (index) => {
+		if (formData.hypotheses.length === 1) return;
+
+		const updatedHypotheses = formData.hypotheses.filter((_, i) => i !== index);
+
+		setFormData((prev) => ({
+				...prev,
+				hypotheses: updatedHypotheses,
+			}));
+	};
+
+	// Validates start and end dates based on completion status
+	const validateDates = (data) => {
+		let startError = "";
+		let endError = "";
+
+		const hasStartDate = Boolean(data.startDate);
+		const hasEndDate = Boolean(data.endDate);
+
+		if (isCompletedValue(data.completed)) {
+			if (!hasStartDate) {
+				startError = "Completed experiments must have a start date.";
+			} else if (data.startDate > today) {
+				startError = "Completed experiments cannot have a start date in the future.";
+			}
+
+			if (!hasEndDate) {
+				endError = "Completed experiments must have an end date.";
+			} else if (data.endDate > today) {
+				endError = "Completed experiments cannot have an end date in the future.";
+			}
+		}
+
+		if (hasStartDate && hasEndDate && data.endDate < data.startDate) {
+			endError = "End date cannot be earlier than start date.";
+		}
+
+		setStartDateError(startError);
+		setEndDateError(endError);
+
+		return {
+			startError,
+			endError,
+		};
+	};
+
+	// Helper for checking completion choice
+	const isCompletedValue = (value) => value === "yes";
 
   const handleChange = (event) => {
   const { name, value } = event.target;
@@ -41,79 +125,84 @@ function NewExperimentForm() {
 
 		setFormData(updatedFormData);
 
-		// Live validation for experiments with "completed" status: end date must not be later than today
-		if (
-			updatedFormData.status === "completed" &&
-			updatedFormData.endDate &&
-			updatedFormData.endDate > today
-		) {
-			setDateError("Completed experiments cannot have an end date in the future.");
-		} else {
-			setDateError("");
-		}
+		// Clears generic submit error while the user is editing
+		setError("");
 
-		if (
-			updatedFormData.status === "completed" &&
-			updatedFormData.startDate &&
-			updatedFormData.startDate > today
-		) {
-			setDateError("Completed experiments cannot have a start date in the future.");
-		} else {
-			setDateError("");
+		// Re-validates dates live when relevant fields change
+		if (name === "completed" || name === "startDate" || name === "endDate") {
+			validateDates(updatedFormData);
 		}
 	};
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError("");
-    setSuccessMessage("");
+		event.preventDefault();
+		setError("");
+		setSuccessMessage("");
 
-    try {
-      setIsSubmitting(true);
+		const cleanedHypotheses = formData.hypotheses
+			.map((item) => item.trim())
+			.filter((item) => item.length > 0);
 
-      await createExperimentRequest(formData, token);
+		if (
+			!formData.title.trim() ||
+			!formData.description.trim() ||
+			!formData.aim.trim() ||
+			!formData.organismName.trim() ||
+			!formData.methodsText.trim()
+		) {
+			setError("Please fill in all required fields.");
+			return;
+		}
 
-      setSuccessMessage("Experiment created successfully.");
+		if (cleanedHypotheses.length === 0) {
+			setError("At least one hypothesis is required.");
+			return;
+		}
 
-			if (formData.status === "completed" && formData.startDate && formData.startDate > today) {
-				setDateError("Completed experiments cannot have a start date in the future.");
-				return;
-			}
+		const { startError, endError } = validateDates(formData);
 
-			if (formData.status === "completed" && formData.endDate && formData.endDate > today) {
-				setDateError("Completed experiments cannot have an end date in the future.");
-				return;
-			}
+		if (startError || endError) {
+			return;
+		}
 
-			if (formData.status === "completed" && !formData.endDate) {
-				setDateError("Completed experiments must have an end date.");
-				return;
-			}
+		try {
+			setIsSubmitting(true);
 
-			if (formData.status === "completed" && !formData.startDate) {
-				setDateError("Completed experiments must have a start date.");
-				return;
-			}
+			// Maps the yes/no UI choice into backend status values
+			const payload = {
+				...formData,
+				status: isCompleted ? "completed" : "planned",
+			};
 
-      setFormData({
-        title: "",
-        experimentType: "in_vivo",
-        organismName: "",
-        startDate: "",
-        endDate: "",
-        scheduleNotes: "",
-        methodsText: "",
-        resourcesText: "",
-        treatmentPlanText: "",
-        notes: "",
-        status: "planned",
-      });
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to create experiment.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+			await createExperimentRequest(payload, token);
+
+			setSuccessMessage("Experiment created successfully.");
+
+			setFormData({
+				title: "",
+				description: "",
+				aim: "",
+				experimentType: "in_vivo",
+				organismName: "",
+				startDate: "",
+				endDate: "",
+				scheduleNotes: "",
+				methodsText: "",
+				resourcesText: "",
+				treatmentPlanText: "",
+				notes: "",
+				status: "planned",
+				hypotheses: [""],
+			});
+
+			setStartDateError("");
+			setEndDateError("");
+		} catch (err) {
+			setError(err.response?.data?.error || "Failed to create experiment.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
 	useEffect(() => {
 		if (successMessage && successRef.current) {
@@ -144,7 +233,9 @@ function NewExperimentForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="title">Experiment title (Required)</Label>
+            <Label htmlFor="title">Experiment title
+							<FieldRequirement required />
+						</Label>
             <Input
               id="title"
               name="title"
@@ -155,8 +246,74 @@ function NewExperimentForm() {
             />
           </div>
 
+					<div className="space-y-2">
+						<Label htmlFor="description">Short description
+							<FieldRequirement required />
+						</Label>
+						<textarea
+							id="description"
+							name="description"
+							value={formData.description}
+							onChange={handleChange}
+							className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+							placeholder="Provide a short scientific description of the experiment"
+							required
+						/>
+					</div>
+
+					<div className="space-y-2">
+  					<Label htmlFor="aim">Aim of the experiment / study
+							<FieldRequirement required />
+						</Label>
+						<textarea
+							id="aim"
+							name="aim"
+							value={formData.aim}
+							onChange={handleChange}
+							className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+							placeholder="State the aim of this study and research question(s)"
+							required
+						/>
+					</div>
+
+					<div className="space-y-3">
+						<Label>Hypotheses
+							<FieldRequirement required />
+						</Label>
+
+						<div className="space-y-3">
+							{formData.hypotheses.map((hypothesis, index) => (
+								<div key={index} className="space-y-2">
+									<textarea
+										value={hypothesis}
+										onChange={(event) => handleHypothesisChange(index, event.target.value)}
+										className="min-h-[100px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+										placeholder={`Hypothesis ${index + 1}`}
+										required={index === 0}
+									/>
+
+									{formData.hypotheses.length > 1 && (
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => removeHypothesisField(index)}
+										>
+											Remove hypothesis
+										</Button>
+									)}
+								</div>
+							))}
+						</div>
+
+						<Button type="button" variant="secondary" onClick={addHypothesisField}>
+							Add hypothesis
+						</Button>
+					</div>
+
           <div className="space-y-3">
-            <Label>Experiment type (Required)</Label>
+            <Label>Experiment type (Required)
+							<FieldRequirement required />
+						</Label>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
               <label className="flex items-center gap-2 text-sm text-slate-700">
                 <input
@@ -183,33 +340,47 @@ function NewExperimentForm() {
           </div>
 
 					<div className="space-y-3">
-            <Label>Status (Required)</Label>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="radio"
-                  name="status"
-                  value="planned"
-                  checked={formData.status === "planned"}
-                  onChange={handleChange}
-                />
-                planned
-              </label>
+						<Label>
+							Is the experiment completed already?
+							<FieldRequirement required />
+						</Label>
 
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="radio"
-                  name="status"
-                  value="completed"
-                  checked={formData.status === "completed"}
-                  onChange={handleChange}
-                />
-                completed
-              </label>
-            </div>
-          </div>
+						<div
+							className="flex flex-col gap-3 sm:flex-row sm:gap-6"
+							role="radiogroup"
+							aria-required="true"
+							aria-label="Is the experiment completed already?"
+						>
+							<label className="flex items-center gap-2 text-sm text-slate-700">
+								<input
+									type="radio"
+									name="completed"
+									value="yes"
+									checked={formData.completed === "yes"}
+									onChange={handleChange}
+									required
+								/>
+								Yes
+							</label>
+
+							<label className="flex items-center gap-2 text-sm text-slate-700">
+								<input
+									type="radio"
+									name="completed"
+									value="no"
+									checked={formData.completed === "no"}
+									onChange={handleChange}
+									required
+								/>
+								No
+							</label>
+						</div>
+					</div>
+
           <div className="space-y-2">
-            <Label htmlFor="organismName">Organism / subject name (Required)</Label>
+            <Label htmlFor="organismName">Organism / subject className
+							<FieldRequirement required />
+						</Label>
             <Input
               id="organismName"
               name="organismName"
@@ -222,40 +393,54 @@ function NewExperimentForm() {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start date</Label>
-              <Input
-                id="startDate"
-                name="startDate"
-                type="date"
-                value={formData.startDate}
-                onChange={handleChange}
-              />
-							{dateError && (
-								<p className="text-sm text-red-600" role="alert">
-									{dateError}
+							<Label htmlFor="startDate">
+								Start date
+								<FieldRequirement required={isCompleted} />
+							</Label>
+							<Input
+								id="startDate"
+								name="startDate"
+								type="date"
+								value={formData.startDate}
+								onChange={handleChange}
+								aria-invalid={Boolean(startDateError)}
+								aria-describedby={startDateError ? "start-date-error" : undefined}
+							/>
+
+							{startDateError && (
+								<p id="start-date-error" className="text-sm text-red-600" role="alert">
+									{startDateError}
 								</p>
 							)}
-            </div>
+						</div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">End date</Label>
-              <Input
-                id="endDate"
-                name="endDate"
-                type="date"
-                value={formData.endDate}
-                onChange={handleChange}
-              />
-							{dateError && (
-								<p className="text-sm text-red-600" role="alert">
-									{dateError}
+							<Label htmlFor="endDate">
+								End date
+								<FieldRequirement required={isCompleted} />
+							</Label>
+							<Input
+								id="endDate"
+								name="endDate"
+								type="date"
+								value={formData.endDate}
+								onChange={handleChange}
+								aria-invalid={Boolean(endDateError)}
+								aria-describedby={endDateError ? "end-date-error" : undefined}
+							/>
+
+							{endDateError && (
+								<p id="end-date-error" className="text-sm text-red-600" role="alert">
+									{endDateError}
 								</p>
 							)}
-            </div>
+						</div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="scheduleNotes">Schedule notes</Label>
+            <Label htmlFor="scheduleNotes">Schedule notes
+							<FieldRequirement required={false} />
+						</Label>
             <textarea
               id="scheduleNotes"
               name="scheduleNotes"
@@ -267,7 +452,9 @@ function NewExperimentForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="methodsText">Methods (Required)</Label>
+            <Label htmlFor="methodsText">Methods (Required)
+							<FieldRequirement required />
+						</Label>
             <textarea
               id="methodsText"
               name="methodsText"
@@ -280,7 +467,9 @@ function NewExperimentForm() {
           </div>
 
 					<div className="space-y-2">
-            <Label htmlFor="resourcesText">Resources</Label>
+            <Label htmlFor="resourcesText">Resources
+							<FieldRequirement required={false} />
+						</Label>
             <textarea
               id="resourcesText"
               name="resourcesText"
@@ -292,7 +481,9 @@ function NewExperimentForm() {
           </div>
 
 					<div className="space-y-2">
-            <Label htmlFor="treatmentPlanText">Treatment / intervention plan</Label>
+            <Label htmlFor="treatmentPlanText">Treatment / intervention plan
+							<FieldRequirement required={false} />
+						</Label>
             <textarea
               id="treatmentPlanText"
               name="treatmentPlanText"
@@ -304,7 +495,9 @@ function NewExperimentForm() {
           </div>
 
 					<div className="space-y-2">
-            <Label htmlFor="notes">General notes</Label>
+            <Label htmlFor="notes">General notes
+							<FieldRequirement required={false} />
+						</Label>
             <textarea
               id="notes"
               name="notes"

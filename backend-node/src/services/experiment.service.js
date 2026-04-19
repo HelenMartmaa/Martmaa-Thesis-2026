@@ -7,6 +7,8 @@ import {
 // Validates and creates a new experiment
 const createExperimentService = async ({
   title,
+  description,
+  aim,
   experimentType,
   organismName,
   startDate,
@@ -17,14 +19,29 @@ const createExperimentService = async ({
   treatmentPlanText,
   notes,
   status,
+  hypotheses,
   userId,
 }) => {
   const trimmedTitle = title?.trim();
+  const trimmedDescription = description?.trim();
+  const trimmedAim = aim?.trim();
   const normalizedType = experimentType?.trim();
+  const trimmedOrganismName = organismName?.trim();
+  const trimmedMethodsText = methodsText?.trim();
   const normalizedStatus = status?.trim();
 
-  if (!trimmedTitle || !normalizedType || !normalizedStatus) {
-    throw new Error("Title, experiment type, and status are required.");
+  if (
+    !trimmedTitle ||
+    !trimmedDescription ||
+    !trimmedAim ||
+    !normalizedType ||
+    !trimmedOrganismName ||
+    !trimmedMethodsText ||
+    !normalizedStatus
+  ) {
+    throw new Error(
+      "Title, description, aim, experiment type, organism name, methods, and status are required."
+    );
   }
 
   if (!["in_vivo", "in_vitro"].includes(normalizedType)) {
@@ -33,6 +50,14 @@ const createExperimentService = async ({
 
   if (!["planned", "completed"].includes(normalizedStatus)) {
     throw new Error("Status must be either 'planned' or 'completed'.");
+  }
+
+  const cleanedHypotheses = (hypotheses || [])
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+
+  if (cleanedHypotheses.length === 0) {
+    throw new Error("At least one hypothesis is required.");
   }
 
   // Convert HTML date input strings into Date objects for Prisma
@@ -46,16 +71,19 @@ const createExperimentService = async ({
 
   return createExperiment({
     title: trimmedTitle,
+    description: trimmedDescription,
+    aim: trimmedAim,
     experimentType: normalizedType,
-    organismName: organismName?.trim() || null,
+    organismName: trimmedOrganismName,
     startDate: parsedStartDate,
     endDate: parsedEndDate,
     scheduleNotes: scheduleNotes?.trim() || null,
-    methodsText: methodsText?.trim() || null,
+    methodsText: trimmedMethodsText,
     resourcesText: resourcesText?.trim() || null,
     treatmentPlanText: treatmentPlanText?.trim() || null,
     notes: notes?.trim() || null,
     status: normalizedStatus,
+    hypotheses: cleanedHypotheses,
     userId,
   });
 };

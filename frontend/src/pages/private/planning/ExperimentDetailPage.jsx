@@ -136,13 +136,30 @@ function ExperimentDetailPage() {
 							<span className="font-medium text-slate-900">Created at:</span>{" "}
 							{new Date(experiment.createdAt).toLocaleString()}
 						</div>
-{/* 
+
 						<div>
-							<span className="font-medium text-slate-900">Description:</span>
-							<p className="mt-1">
-								{experiment.description || "No description provided."}
-							</p>
-						</div> */}
+							<span className="font-medium text-slate-900">Short description:</span>
+							<p className="mt-1">{experiment.description || "No description provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Aim:</span>
+							<p className="mt-1">{experiment.aim || "No aim provided."}</p>
+						</div>
+
+						<div>
+							<span className="font-medium text-slate-900">Hypotheses:</span>
+							{experiment.hypotheses?.length ? (
+								<ul className="mt-2 list-disc space-y-2 pl-5">
+									{experiment.hypotheses.map((item) => (
+										<li key={item.id}>{item.hypothesisText}</li>
+									))}
+								</ul>
+							) : (
+								<p className="mt-1">No hypotheses provided.</p>
+							)}
+						</div>
+
 					</CardContent>
 				</Card>
 			)}

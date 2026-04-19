@@ -27,6 +27,8 @@ model Experiment {
   id                Int       @id @default(autoincrement())
   userId            Int       @map("user_id")
   title             String    @db.VarChar(255)
+  description       String?
+  aim               String?
   experimentType    String    @map("experiment_type") @db.VarChar(20)
   organismName      String?   @map("organism_name") @db.VarChar(255)
   startDate         DateTime? @map("start_date") @db.Date
@@ -44,6 +46,7 @@ model Experiment {
   groups      ExperimentGroup[]
   subjects    ExperimentSubject[]
   teamMembers ExperimentTeamMember[]
+  hypotheses  ExperimentHypothesis[]
 
   @@map("experiments")
 }
@@ -93,4 +96,16 @@ model ExperimentTeamMember {
   experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
 
   @@map("experiment_team_members")
+}
+
+// ExperimentHypothesis table for adding hypothesis or hypotheses for the experiment
+model ExperimentHypothesis {
+  id             Int      @id @default(autoincrement())
+  experimentId   Int      @map("experiment_id")
+  hypothesisText String   @map("hypothesis_text")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@map("experiment_hypotheses")
 }
