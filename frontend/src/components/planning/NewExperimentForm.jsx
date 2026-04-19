@@ -34,6 +34,34 @@ function NewExperimentForm() {
 	const [endDateError, setEndDateError] = useState("");
 	const [dateError, setDateError] = useState("");
 
+	// Resets form fields and validation state
+	const resetForm = ({ clearSuccess = true } = {}) => {
+		setFormData({
+			title: "",
+			description: "",
+			aim: "",
+			experimentType: "in_vivo",
+			organismName: "",
+			completed: "no",
+			startDate: "",
+			endDate: "",
+			scheduleNotes: "",
+			methodsText: "",
+			resourcesText: "",
+			treatmentPlanText: "",
+			notes: "",
+			hypotheses: [""],
+		});
+
+		setError("");
+		setStartDateError("");
+		setEndDateError("");
+
+		if (clearSuccess) {
+			setSuccessMessage("");
+		}
+	};
+
 	const successRef = useRef(null);
 	// Used for validating date inputs against the current day
 	const today = new Date().toISOString().split("T")[0];
@@ -43,7 +71,7 @@ function NewExperimentForm() {
 		return (
 			<span className="text-slate-500">
 				{" "}
-				({required ? "required" : "optional"})
+				({required ? "Required" : "Optional"})
 			</span>
 		);
 	}
@@ -84,8 +112,9 @@ function NewExperimentForm() {
 
 		const hasStartDate = Boolean(data.startDate);
 		const hasEndDate = Boolean(data.endDate);
+		const completed = isCompletedValue(data.completed);
 
-		if (isCompletedValue(data.completed)) {
+		if (completed) {
 			if (!hasStartDate) {
 				startError = "Completed experiments must have a start date.";
 			} else if (data.startDate > today) {
@@ -97,8 +126,15 @@ function NewExperimentForm() {
 			} else if (data.endDate > today) {
 				endError = "Completed experiments cannot have an end date in the future.";
 			}
-		}
+		} else {
+			// If experiment is not completed, an entered end date must be in the future
+			if (hasEndDate && data.endDate <= today) {
+				endError =
+					"Experiments that are not completed yet cannot have an end date in the past or today.";
+			}
+  }
 
+		// This rule applies in every case if both dates are present
 		if (hasStartDate && hasEndDate && data.endDate < data.startDate) {
 			endError = "End date cannot be earlier than start date.";
 		}
@@ -178,22 +214,8 @@ function NewExperimentForm() {
 
 			setSuccessMessage("Experiment created successfully.");
 
-			setFormData({
-				title: "",
-				description: "",
-				aim: "",
-				experimentType: "in_vivo",
-				organismName: "",
-				startDate: "",
-				endDate: "",
-				scheduleNotes: "",
-				methodsText: "",
-				resourcesText: "",
-				treatmentPlanText: "",
-				notes: "",
-				status: "planned",
-				hypotheses: [""],
-			});
+			resetForm({ clearSuccess: false });
+			setSuccessMessage("Experiment created successfully.");
 
 			setStartDateError("");
 			setEndDateError("");
@@ -242,7 +264,7 @@ function NewExperimentForm() {
               value={formData.title}
               onChange={handleChange}
               placeholder="Enter experiment title"
-              required
+							required
             />
           </div>
 
@@ -311,7 +333,7 @@ function NewExperimentForm() {
 					</div>
 
           <div className="space-y-3">
-            <Label>Experiment type (Required)
+            <Label>Experiment type
 							<FieldRequirement required />
 						</Label>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
@@ -323,7 +345,7 @@ function NewExperimentForm() {
                   checked={formData.experimentType === "in_vivo"}
                   onChange={handleChange}
                 />
-                in vivo
+                <i>in vivo</i>
               </label>
 
               <label className="flex items-center gap-2 text-sm text-slate-700">
@@ -334,7 +356,7 @@ function NewExperimentForm() {
                   checked={formData.experimentType === "in_vitro"}
                   onChange={handleChange}
                 />
-                in vitro
+                <i>in vitro</i>
               </label>
             </div>
           </div>
@@ -378,7 +400,7 @@ function NewExperimentForm() {
 					</div>
 
           <div className="space-y-2">
-            <Label htmlFor="organismName">Organism / subject className
+            <Label htmlFor="organismName">Organism / subject name
 							<FieldRequirement required />
 						</Label>
             <Input
@@ -452,7 +474,7 @@ function NewExperimentForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="methodsText">Methods (Required)
+            <Label htmlFor="methodsText">Methods
 							<FieldRequirement required />
 						</Label>
             <textarea
@@ -508,22 +530,21 @@ function NewExperimentForm() {
             />
           </div>
 
-{/*           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <textarea
-              id="description"
-              name="description"
-              aria-label="Add a short description for the experiment, optional"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Add a short description of the experiment"
-              className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            />
-          </div> */}
+					<div className="flex flex-col gap-3 sm:flex-row">
+						<Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+							{isSubmitting ? "Saving..." : "Create Experiment"}
+						</Button>
 
-          <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Create Experiment"}
-          </Button>
+						<Button
+							type="button"
+							variant="outline"
+							className="w-full sm:w-auto"
+							onClick={() => resetForm()}
+						>
+							Clear form
+						</Button>
+					</div>
+
         </form>
       </CardContent>
     </Card>
