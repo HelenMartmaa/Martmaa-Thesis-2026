@@ -69,6 +69,15 @@ function NewExperimentForm() {
 		setShowForm(true);
 	}
 
+	// Sets character counts for text box fields with max count
+	function CharacterCount({ current, max }) {
+		return (
+			<p className="text-xs text-slate-500">
+				{current ?? 0}/{max}
+			</p>
+		);
+	}
+
 	const successRef = useRef(null);
 	// Used for validating date inputs against the current day
 	const today = new Date().toISOString().split("T")[0];
@@ -271,9 +280,11 @@ function NewExperimentForm() {
 								name="title"
 								value={formData.title}
 								onChange={handleChange}
+								maxLength={255}
 								placeholder="Enter experiment title"
 								required
 							/>
+							<CharacterCount current={(formData.title || "").length} max={255} />
 						</div>
 
 						<div className="space-y-2">
@@ -285,10 +296,12 @@ function NewExperimentForm() {
 								name="description"
 								value={formData.description}
 								onChange={handleChange}
+								maxLength={1000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Provide a short scientific description of the experiment"
 								required
 							/>
+							<CharacterCount current={(formData.description || "").length} max={1000} />
 						</div>
 
 						<div className="space-y-2">
@@ -300,10 +313,12 @@ function NewExperimentForm() {
 								name="aim"
 								value={formData.aim}
 								onChange={handleChange}
+								maxLength={1000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="State the aim of this study and research question(s)"
 								required
 							/>
+							<CharacterCount current={(formData.aim || "").length} max={1000} />
 						</div>
 
 						<div className="space-y-3">
@@ -317,10 +332,12 @@ function NewExperimentForm() {
 										<textarea
 											value={hypothesis}
 											onChange={(event) => handleHypothesisChange(index, event.target.value)}
-											className="min-h-[100px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+											maxLength={500}
+											className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 											placeholder={`Hypothesis ${index + 1}`}
 											required={index === 0}
 										/>
+										<CharacterCount current={(hypothesis || "").length} max={500} />
 
 										{formData.hypotheses.length > 1 && (
 											<Button
@@ -476,9 +493,11 @@ function NewExperimentForm() {
 								name="scheduleNotes"
 								value={formData.scheduleNotes}
 								onChange={handleChange}
+								maxLength={1000}
 								className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Add scheduling details or timing notes"
 							/>
+							<CharacterCount current={(formData.scheduleNotes || "").length} max={1000} />
 						</div>
 
 						<div className="space-y-2">
@@ -490,10 +509,12 @@ function NewExperimentForm() {
 								name="methodsText"
 								value={formData.methodsText}
 								onChange={handleChange}
+								maxLength={2000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe the methods used in the experiment"
 								required
 							/>
+							<CharacterCount current={(formData.methodsText || "").length} max={2000} />
 						</div>
 
 						<div className="space-y-2">
@@ -505,9 +526,11 @@ function NewExperimentForm() {
 								name="resourcesText"
 								value={formData.resourcesText}
 								onChange={handleChange}
+								maxLength={1500}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe materials and resources needed"
 							/>
+							<CharacterCount current={(formData.resourcesText || "").length} max={1500} />
 						</div>
 
 						<div className="space-y-2">
@@ -519,9 +542,11 @@ function NewExperimentForm() {
 								name="treatmentPlanText"
 								value={formData.treatmentPlanText}
 								onChange={handleChange}
+								maxLength={1500}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe treatment or intervention details"
 							/>
+							<CharacterCount current={(formData.treatmentPlanText || "").length} max={1500} />
 						</div>
 
 						<div className="space-y-2">
@@ -533,9 +558,11 @@ function NewExperimentForm() {
 								name="notes"
 								value={formData.notes}
 								onChange={handleChange}
+								maxLength={1500}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Add any additional comments"
 							/>
+							<CharacterCount current={(formData.notes || "").length} max={1500} />
 						</div>
 
 						<div className="flex flex-col gap-3 sm:flex-row">

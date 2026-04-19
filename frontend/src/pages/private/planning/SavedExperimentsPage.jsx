@@ -4,6 +4,7 @@ import { getSavedExperimentsRequest } from "../../../features/planning/planningA
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Link } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
+import BackToTopButton from "../../../components/common/BackToTopButton";
 
 // Page for listing saved experiments
 function SavedExperimentsPage() {
@@ -11,6 +12,13 @@ function SavedExperimentsPage() {
   const [experiments, setExperiments] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+	// Formatting experiment type for better visual displayment
+	const formatExperimentType = (value) => {
+		if (value === "in_vivo") return "in vivo";
+		if (value === "in_vitro") return "in vitro";
+		return value;
+	};
 
   useEffect(() => {
     const loadExperiments = async () => {
@@ -65,7 +73,7 @@ function SavedExperimentsPage() {
 						<CardContent className="space-y-3 text-sm text-slate-600">
 						<p>
 							<span className="font-medium text-slate-900">Type:</span>{" "}
-							{experiment.experimentType}
+							{formatExperimentType(experiment.experimentType)}
 						</p>
 
 						<p>
@@ -89,6 +97,7 @@ function SavedExperimentsPage() {
 					</Card>
 				))}
 			</div>
+			<BackToTopButton />
     </section>
   );
 }

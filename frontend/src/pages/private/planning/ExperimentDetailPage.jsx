@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
 import { getExperimentByIdRequest } from "../../../features/planning/planningApi";
 import { Button } from "../../../components/ui/button";
+import BackToTopButton from "../../../components/common/BackToTopButton";
 import {
   Card,
   CardContent,
@@ -19,6 +20,13 @@ function ExperimentDetailPage() {
   const [experiment, setExperiment] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+	// Formatting experiment type for better visual displayment
+	const formatExperimentType = (value) => {
+		if (value === "in_vivo") return "in vivo";
+		if (value === "in_vitro") return "in vitro";
+		return value;
+	};
 
   useEffect(() => {
     const loadExperiment = async () => {
@@ -78,7 +86,7 @@ function ExperimentDetailPage() {
 							<span className="font-medium text-slate-900">
 								Experiment type:
 							</span>{" "}
-							{experiment.experimentType}
+							{formatExperimentType(experiment.experimentType)}
 						</div>
 
 						<div>
@@ -163,6 +171,7 @@ function ExperimentDetailPage() {
 					</CardContent>
 				</Card>
 			)}
+			<BackToTopButton />
     </section>
   );
 }
