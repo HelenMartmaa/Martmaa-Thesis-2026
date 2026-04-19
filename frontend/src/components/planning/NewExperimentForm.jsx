@@ -33,6 +33,7 @@ function NewExperimentForm() {
 	const [startDateError, setStartDateError] = useState("");
 	const [endDateError, setEndDateError] = useState("");
 	const [dateError, setDateError] = useState("");
+	const [showForm, setShowForm] = useState("true");
 
 	// Resets form fields and validation state
 	const resetForm = ({ clearSuccess = true } = {}) => {
@@ -61,6 +62,12 @@ function NewExperimentForm() {
 			setSuccessMessage("");
 		}
 	};
+
+	// Restores the empty form after successful saving
+	const handleAddAnotherExperiment = () => {
+		resetForm();
+		setShowForm(true);
+	}
 
 	const successRef = useRef(null);
 	// Used for validating date inputs against the current day
@@ -216,6 +223,7 @@ function NewExperimentForm() {
 
 			resetForm({ clearSuccess: false });
 			setSuccessMessage("Experiment created successfully.");
+			setShowForm(false);
 
 			setStartDateError("");
 			setEndDateError("");
@@ -237,315 +245,315 @@ function NewExperimentForm() {
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {successMessage && (
-						<div
-							ref={successRef}
-							tabIndex="-1"
-							className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 outline-none"
-						>
-							{successMessage}
+				{!showForm ? (
+					<div className="space-y-5">
+						{successMessage && (
+							<div
+								ref={successRef}
+								tabIndex="-1"
+								className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 outline-none">
+									{successMessage}
+							</div>
+						)}
+
+						<Button type="button" onClick={handleAddAnotherExperiment}>
+							Add another experiment
+						</Button>
+					</div>
+				) : (
+					<form onSubmit={handleSubmit} className="space-y-6">
+					<div className="space-y-2">
+							<Label htmlFor="title">Experiment title
+								<FieldRequirement required />
+							</Label>
+							<Input
+								id="title"
+								name="title"
+								value={formData.title}
+								onChange={handleChange}
+								placeholder="Enter experiment title"
+								required
+							/>
 						</div>
-					)}
 
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+						<div className="space-y-2">
+							<Label htmlFor="description">Short description
+								<FieldRequirement required />
+							</Label>
+							<textarea
+								id="description"
+								name="description"
+								value={formData.description}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Provide a short scientific description of the experiment"
+								required
+							/>
+						</div>
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Experiment title
-							<FieldRequirement required />
-						</Label>
-            <Input
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              placeholder="Enter experiment title"
-							required
-            />
-          </div>
-
-					<div className="space-y-2">
-						<Label htmlFor="description">Short description
-							<FieldRequirement required />
-						</Label>
-						<textarea
-							id="description"
-							name="description"
-							value={formData.description}
-							onChange={handleChange}
-							className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-							placeholder="Provide a short scientific description of the experiment"
-							required
-						/>
-					</div>
-
-					<div className="space-y-2">
-  					<Label htmlFor="aim">Aim of the experiment / study
-							<FieldRequirement required />
-						</Label>
-						<textarea
-							id="aim"
-							name="aim"
-							value={formData.aim}
-							onChange={handleChange}
-							className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-							placeholder="State the aim of this study and research question(s)"
-							required
-						/>
-					</div>
-
-					<div className="space-y-3">
-						<Label>Hypotheses
-							<FieldRequirement required />
-						</Label>
+						<div className="space-y-2">
+							<Label htmlFor="aim">Aim of the experiment / study
+								<FieldRequirement required />
+							</Label>
+							<textarea
+								id="aim"
+								name="aim"
+								value={formData.aim}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="State the aim of this study and research question(s)"
+								required
+							/>
+						</div>
 
 						<div className="space-y-3">
-							{formData.hypotheses.map((hypothesis, index) => (
-								<div key={index} className="space-y-2">
-									<textarea
-										value={hypothesis}
-										onChange={(event) => handleHypothesisChange(index, event.target.value)}
-										className="min-h-[100px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-										placeholder={`Hypothesis ${index + 1}`}
-										required={index === 0}
+							<Label>Hypotheses
+								<FieldRequirement required />
+							</Label>
+
+							<div className="space-y-3">
+								{formData.hypotheses.map((hypothesis, index) => (
+									<div key={index} className="space-y-2">
+										<textarea
+											value={hypothesis}
+											onChange={(event) => handleHypothesisChange(index, event.target.value)}
+											className="min-h-[100px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+											placeholder={`Hypothesis ${index + 1}`}
+											required={index === 0}
+										/>
+
+										{formData.hypotheses.length > 1 && (
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => removeHypothesisField(index)}
+											>
+												Remove hypothesis
+											</Button>
+										)}
+									</div>
+								))}
+							</div>
+
+							<Button type="button" variant="secondary" onClick={addHypothesisField}>
+								Add hypothesis
+							</Button>
+						</div>
+
+						<div className="space-y-3">
+							<Label>Experiment type
+								<FieldRequirement required />
+							</Label>
+							<div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
+								<label className="flex items-center gap-2 text-sm text-slate-700">
+									<input
+										type="radio"
+										name="experimentType"
+										value="in_vivo"
+										checked={formData.experimentType === "in_vivo"}
+										onChange={handleChange}
 									/>
+									<i>in vivo</i>
+								</label>
 
-									{formData.hypotheses.length > 1 && (
-										<Button
-											type="button"
-											variant="outline"
-											onClick={() => removeHypothesisField(index)}
-										>
-											Remove hypothesis
-										</Button>
-									)}
-								</div>
-							))}
+								<label className="flex items-center gap-2 text-sm text-slate-700">
+									<input
+										type="radio"
+										name="experimentType"
+										value="in_vitro"
+										checked={formData.experimentType === "in_vitro"}
+										onChange={handleChange}
+									/>
+									<i>in vitro</i>
+								</label>
+							</div>
 						</div>
 
-						<Button type="button" variant="secondary" onClick={addHypothesisField}>
-							Add hypothesis
-						</Button>
-					</div>
+						<div className="space-y-3">
+							<Label>
+								Is the experiment completed already?
+								<FieldRequirement required />
+							</Label>
 
-          <div className="space-y-3">
-            <Label>Experiment type
-							<FieldRequirement required />
-						</Label>
-            <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="radio"
-                  name="experimentType"
-                  value="in_vivo"
-                  checked={formData.experimentType === "in_vivo"}
-                  onChange={handleChange}
-                />
-                <i>in vivo</i>
-              </label>
+							<div
+								className="flex flex-col gap-3 sm:flex-row sm:gap-6"
+								role="radiogroup"
+								aria-required="true"
+								aria-label="Is the experiment completed already?"
+							>
+								<label className="flex items-center gap-2 text-sm text-slate-700">
+									<input
+										type="radio"
+										name="completed"
+										value="yes"
+										checked={formData.completed === "yes"}
+										onChange={handleChange}
+										required
+									/>
+									Yes
+								</label>
 
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="radio"
-                  name="experimentType"
-                  value="in_vitro"
-                  checked={formData.experimentType === "in_vitro"}
-                  onChange={handleChange}
-                />
-                <i>in vitro</i>
-              </label>
-            </div>
-          </div>
-
-					<div className="space-y-3">
-						<Label>
-							Is the experiment completed already?
-							<FieldRequirement required />
-						</Label>
-
-						<div
-							className="flex flex-col gap-3 sm:flex-row sm:gap-6"
-							role="radiogroup"
-							aria-required="true"
-							aria-label="Is the experiment completed already?"
-						>
-							<label className="flex items-center gap-2 text-sm text-slate-700">
-								<input
-									type="radio"
-									name="completed"
-									value="yes"
-									checked={formData.completed === "yes"}
-									onChange={handleChange}
-									required
-								/>
-								Yes
-							</label>
-
-							<label className="flex items-center gap-2 text-sm text-slate-700">
-								<input
-									type="radio"
-									name="completed"
-									value="no"
-									checked={formData.completed === "no"}
-									onChange={handleChange}
-									required
-								/>
-								No
-							</label>
+								<label className="flex items-center gap-2 text-sm text-slate-700">
+									<input
+										type="radio"
+										name="completed"
+										value="no"
+										checked={formData.completed === "no"}
+										onChange={handleChange}
+										required
+									/>
+									No
+								</label>
+							</div>
 						</div>
-					</div>
 
-          <div className="space-y-2">
-            <Label htmlFor="organismName">Organism / subject name
-							<FieldRequirement required />
-						</Label>
-            <Input
-              id="organismName"
-              name="organismName"
-              value={formData.organismName}
-              onChange={handleChange}
-              placeholder="Example: Mus musculus / E. coli / protein name"
-							required
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-							<Label htmlFor="startDate">
-								Start date
-								<FieldRequirement required={isCompleted} />
+						<div className="space-y-2">
+							<Label htmlFor="organismName">Organism / subject name
+								<FieldRequirement required />
 							</Label>
 							<Input
-								id="startDate"
-								name="startDate"
-								type="date"
-								value={formData.startDate}
+								id="organismName"
+								name="organismName"
+								value={formData.organismName}
 								onChange={handleChange}
-								aria-invalid={Boolean(startDateError)}
-								aria-describedby={startDateError ? "start-date-error" : undefined}
+								placeholder="Example: Mus musculus / E. coli / protein name"
+								required
 							/>
-
-							{startDateError && (
-								<p id="start-date-error" className="text-sm text-red-600" role="alert">
-									{startDateError}
-								</p>
-							)}
 						</div>
 
-            <div className="space-y-2">
-							<Label htmlFor="endDate">
-								End date
-								<FieldRequirement required={isCompleted} />
+						<div className="grid gap-4 sm:grid-cols-2">
+							<div className="space-y-2">
+								<Label htmlFor="startDate">
+									Start date
+									<FieldRequirement required={isCompleted} />
+								</Label>
+								<Input
+									id="startDate"
+									name="startDate"
+									type="date"
+									value={formData.startDate}
+									onChange={handleChange}
+									aria-invalid={Boolean(startDateError)}
+									aria-describedby={startDateError ? "start-date-error" : undefined}
+								/>
+
+								{startDateError && (
+									<p id="start-date-error" className="text-sm text-red-600" role="alert">
+										{startDateError}
+									</p>
+								)}
+							</div>
+
+							<div className="space-y-2">
+								<Label htmlFor="endDate">
+									End date
+									<FieldRequirement required={isCompleted} />
+								</Label>
+								<Input
+									id="endDate"
+									name="endDate"
+									type="date"
+									value={formData.endDate}
+									onChange={handleChange}
+									aria-invalid={Boolean(endDateError)}
+									aria-describedby={endDateError ? "end-date-error" : undefined}
+								/>
+
+								{endDateError && (
+									<p id="end-date-error" className="text-sm text-red-600" role="alert">
+										{endDateError}
+									</p>
+								)}
+							</div>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="scheduleNotes">Schedule notes
+								<FieldRequirement required={false} />
 							</Label>
-							<Input
-								id="endDate"
-								name="endDate"
-								type="date"
-								value={formData.endDate}
+							<textarea
+								id="scheduleNotes"
+								name="scheduleNotes"
+								value={formData.scheduleNotes}
 								onChange={handleChange}
-								aria-invalid={Boolean(endDateError)}
-								aria-describedby={endDateError ? "end-date-error" : undefined}
+								className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Add scheduling details or timing notes"
 							/>
-
-							{endDateError && (
-								<p id="end-date-error" className="text-sm text-red-600" role="alert">
-									{endDateError}
-								</p>
-							)}
 						</div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="scheduleNotes">Schedule notes
-							<FieldRequirement required={false} />
-						</Label>
-            <textarea
-              id="scheduleNotes"
-              name="scheduleNotes"
-              value={formData.scheduleNotes}
-              onChange={handleChange}
-              className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Add scheduling details or timing notes"
-            />
-          </div>
+						<div className="space-y-2">
+							<Label htmlFor="methodsText">Methods
+								<FieldRequirement required />
+							</Label>
+							<textarea
+								id="methodsText"
+								name="methodsText"
+								value={formData.methodsText}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Describe the methods used in the experiment"
+								required
+							/>
+						</div>
 
-          <div className="space-y-2">
-            <Label htmlFor="methodsText">Methods
-							<FieldRequirement required />
-						</Label>
-            <textarea
-              id="methodsText"
-              name="methodsText"
-              value={formData.methodsText}
-              onChange={handleChange}
-              className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Describe the methods used in the experiment"
-							required
-            />
-          </div>
+						<div className="space-y-2">
+							<Label htmlFor="resourcesText">Resources
+								<FieldRequirement required={false} />
+							</Label>
+							<textarea
+								id="resourcesText"
+								name="resourcesText"
+								value={formData.resourcesText}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Describe materials and resources needed"
+							/>
+						</div>
 
-					<div className="space-y-2">
-            <Label htmlFor="resourcesText">Resources
-							<FieldRequirement required={false} />
-						</Label>
-            <textarea
-              id="resourcesText"
-              name="resourcesText"
-              value={formData.resourcesText}
-              onChange={handleChange}
-              className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Describe materials and resources needed"
-            />
-          </div>
+						<div className="space-y-2">
+							<Label htmlFor="treatmentPlanText">Treatment / intervention plan
+								<FieldRequirement required={false} />
+							</Label>
+							<textarea
+								id="treatmentPlanText"
+								name="treatmentPlanText"
+								value={formData.treatmentPlanText}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Describe treatment or intervention details"
+							/>
+						</div>
 
-					<div className="space-y-2">
-            <Label htmlFor="treatmentPlanText">Treatment / intervention plan
-							<FieldRequirement required={false} />
-						</Label>
-            <textarea
-              id="treatmentPlanText"
-              name="treatmentPlanText"
-              value={formData.treatmentPlanText}
-              onChange={handleChange}
-              className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Describe treatment or intervention details"
-            />
-          </div>
+						<div className="space-y-2">
+							<Label htmlFor="notes">General notes
+								<FieldRequirement required={false} />
+							</Label>
+							<textarea
+								id="notes"
+								name="notes"
+								value={formData.notes}
+								onChange={handleChange}
+								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+								placeholder="Add any additional comments"
+							/>
+						</div>
 
-					<div className="space-y-2">
-            <Label htmlFor="notes">General notes
-							<FieldRequirement required={false} />
-						</Label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Add any additional comments"
-            />
-          </div>
+						<div className="flex flex-col gap-3 sm:flex-row">
+							<Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+								{isSubmitting ? "Saving..." : "Create Experiment"}
+							</Button>
 
-					<div className="flex flex-col gap-3 sm:flex-row">
-						<Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-							{isSubmitting ? "Saving..." : "Create Experiment"}
-						</Button>
-
-						<Button
-							type="button"
-							variant="outline"
-							className="w-full sm:w-auto"
-							onClick={() => resetForm()}
-						>
-							Clear form
-						</Button>
-					</div>
-
-        </form>
+							<Button
+								type="button"
+								variant="outline"
+								className="w-full sm:w-auto"
+								onClick={() => resetForm()}
+							>
+								Clear form
+							</Button>
+						</div>
+					</form>
+				)}
       </CardContent>
     </Card>
   );
