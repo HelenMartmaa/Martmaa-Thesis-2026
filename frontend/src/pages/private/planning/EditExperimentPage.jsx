@@ -34,7 +34,7 @@ function EditExperimentPage() {
     <section className="space-y-6">
       <div>
         <Button asChild variant="outline">
-          <Link to={`/planning/${id}`}>← Back to Experiment Details</Link>
+          <Link to={`/planning/${id}`}>⮜ Back to Experiment Details</Link>
         </Button>
       </div>
 

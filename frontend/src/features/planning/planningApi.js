@@ -55,4 +55,93 @@ const deleteExperimentRequest = async (experimentId, token) => {
   return response.data;
 };
 
-export { createExperimentRequest, getSavedExperimentsRequest, getExperimentByIdRequest, updateExperimentRequest, deleteExperimentRequest };
+// Loads all groups for one experiment
+const getExperimentGroupsRequest = async (experimentId, token) => {
+  const response = await apiClient.get(`/experiments/${experimentId}/groups`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+// Creates a new group for one experiment
+const createExperimentGroupRequest = async (experimentId, data, token) => {
+  const response = await apiClient.post(`/experiments/${experimentId}/groups`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+// Loads all subjects for one experiment
+const getExperimentSubjectsRequest = async (experimentId, token) => {
+  const response = await apiClient.get(`/experiments/${experimentId}/subjects`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+// Creates a new subject for one experiment
+const createExperimentSubjectRequest = async (experimentId, data, token) => {
+  const response = await apiClient.post(`/experiments/${experimentId}/subjects`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+// Loads all team members for one experiment
+const getExperimentTeamMembersRequest = async (experimentId, token) => {
+  const response = await apiClient.get(
+    `/experiments/${experimentId}/team-members`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Creates a new team member for one experiment
+const createExperimentTeamMemberRequest = async (
+  experimentId,
+  data,
+  token
+) => {
+  const response = await apiClient.post(
+    `/experiments/${experimentId}/team-members`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export {
+  createExperimentRequest,
+  getSavedExperimentsRequest,
+  getExperimentByIdRequest,
+  updateExperimentRequest,
+  deleteExperimentRequest,
+  getExperimentGroupsRequest,
+  createExperimentGroupRequest,
+  getExperimentSubjectsRequest,
+  createExperimentSubjectRequest,
+  getExperimentTeamMembersRequest,
+  createExperimentTeamMemberRequest
+};

@@ -37,7 +37,7 @@ function BackToTopButton() {
         onClick={scrollToTop}
         aria-label="Back to top"
       >
-        ⭡
+        ⮝
         {/* <ArrowUpIcon /> */}
       </Button>
     </div>
