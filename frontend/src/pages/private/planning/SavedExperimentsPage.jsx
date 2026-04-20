@@ -71,28 +71,40 @@ function SavedExperimentsPage() {
 							<CardTitle className="text-lg">{experiment.title}</CardTitle>
 						</CardHeader>
 						<CardContent className="space-y-3 text-sm text-slate-600">
-						<p>
-							<span className="font-medium text-slate-900">Type:</span>{" "}
-							{formatExperimentType(experiment.experimentType)}
-						</p>
 
-						<p>
-							<span className="font-medium text-slate-900">Status:</span>{" "}
-							{experiment.status}
-						</p>
-
-						{experiment.description && (
 							<p>
-							<span className="font-medium text-slate-900">Description:</span>{" "}
-							{experiment.description}
+								<span className="font-medium text-slate-900">Type:</span>{" "}
+								<i>{formatExperimentType(experiment.experimentType)}</i>
 							</p>
-						)}
 
-						<div className="pt-2">
-							<Button asChild variant="outline">
-							<Link to={`/planning/${experiment.id}`}>Open Experiment</Link>
-							</Button>
-						</div>
+							<p>
+								<span className="font-medium text-slate-900">Organism / subject:</span>{" "}
+								{experiment.organismName}
+							</p>
+
+							<p>
+								<span className="font-medium text-slate-900">Status:</span>{" "}
+								{experiment.status}
+							</p>
+
+							<p>
+								<span className="font-medium text-slate-900">Created at:</span>{" "}
+								{new Date(experiment.createdAt).toLocaleString()}
+							</p>
+
+							{experiment.updatedAt && experiment.updatedAt !== experiment.createdAt && (
+								<div>
+									<span className="font-medium text-slate-900">Updated at:</span>{" "}
+									{new Date(experiment.updatedAt).toLocaleString()}
+								</div>
+							)}
+
+							<div className="pt-2">
+								<Button asChild variant="outline">
+								<Link to={`/planning/${experiment.id}`}>Open Experiment</Link>
+								</Button>
+							</div>
+
 						</CardContent>
 					</Card>
 				))}

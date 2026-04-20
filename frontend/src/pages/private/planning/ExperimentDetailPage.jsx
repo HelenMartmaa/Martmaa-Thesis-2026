@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
 import { getExperimentByIdRequest, deleteExperimentRequest } from "../../../features/planning/planningApi";
@@ -24,6 +24,7 @@ function ExperimentDetailPage() {
 	const [deleteError, setDeleteError] = useState("");
 	const [isDeleting, setIsDeleting] = useState(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const deleteConfirmRef = useRef(null);
 
 	// FOr checking if the time for creating and updating experiment are the same
 	const hasBeeenUpdated = (experiment) => {
@@ -66,6 +67,25 @@ function ExperimentDetailPage() {
 
     loadExperiment();
   }, [id, token]);
+
+	// For focusing deletion confirmation warning, also needed to meet the accessibility requirements
+	useEffect(() => {
+		if (showDeleteConfirm && deleteConfirmRef.current) {
+			// Moves the viewport to the delete confirmation box
+			deleteConfirmRef.current.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
+
+			// Moves keyboard focus to the confirmation box
+			deleteConfirmRef.current.focus();
+		}
+	}, [showDeleteConfirm])
+
+	const openDeleteConfirm = () => {
+		setDeleteError("");
+		setShowDeleteConfirm(false);
+	};
 
   return (
     <section className="space-y-6">
@@ -110,35 +130,33 @@ function ExperimentDetailPage() {
 							<span className="font-medium text-slate-900">
 								Experiment type:
 							</span>{" "}
-							{formatExperimentType(experiment.experimentType)}
+							<i>{formatExperimentType(experiment.experimentType)}</i>
 						</div>
 
 						<div>
 							<span className="font-medium text-slate-900">Short description:</span>
-							<p className="mt-1">{experiment.description || "No description provided."}</p>
+							<p className="mt-1">{experiment.description}</p>
 						</div>
 
 						<div>
 							<span className="font-medium text-slate-900">Aim:</span>
-							<p className="mt-1">{experiment.aim || "No aim provided."}</p>
+							<p className="mt-1">{experiment.aim}</p>
 						</div>
 
-						<div>
-							<span className="font-medium text-slate-900">Hypotheses:</span>
-							{experiment.hypotheses?.length ? (
-								<ul className="mt-2 list-disc space-y-2 pl-5">
-									{experiment.hypotheses.map((item) => (
-										<li key={item.id}>{item.hypothesisText}</li>
-									))}
-								</ul>
-							) : (
-								<p className="mt-1">No hypotheses provided.</p> // Hypotheses were added later and currently there are test experiments without them
-							)}
-						</div>
+						{experiment.hypotheses?.length > 0 && (
+							<div>
+								<span className="font-medium text-slate-900">Hypotheses:</span>
+									<ul className="mt-2 list-disc space-y-2 pl-5">
+										{experiment.hypotheses.map((item) => (
+											<li key={item.id}>{item.hypothesisText}</li>
+										))}
+									</ul>
+							</div>
+						)}
 
 						<div>
 							<span className="font-medium text-slate-900">Organism / subject:</span>{" "}
-							{experiment.organismName || "Not specified."}
+							{experiment.organismName}
 						</div>
 
 						<div>
@@ -146,46 +164,52 @@ function ExperimentDetailPage() {
 							{experiment.status}
 						</div>
 
-						<div>
-							<span className="font-medium text-slate-900">Start date:</span>{" "}
-							{experiment.startDate
-								? new Date(experiment.startDate).toLocaleDateString()
-								: "Not specified."}
-						</div>
+						{experiment.startDate && (
+							<div>
+								<span className="font-medium text-slate-900">Start date:</span>{" "}
+								{new Date(experiment.startDate).toLocaleDateString()}
+							</div>
+						)}
 
-						<div>
-							<span className="font-medium text-slate-900">End date:</span>{" "}
-							{experiment.endDate
-								? new Date(experiment.endDate).toLocaleDateString()
-								: "Not specified."}
-						</div>
+						{experiment.endDate && (
+							<div>
+								<span className="font-medium text-slate-900">End date:</span>{" "}
+								{new Date(experiment.endDate).toLocaleDateString()}
+							</div>
+						)}
 
-						<div>
-							<span className="font-medium text-slate-900">Schedule notes:</span>
-							<p className="mt-1">{experiment.scheduleNotes || "No schedule notes provided."}</p>
-						</div>
+						{experiment.scheduleNotes && (
+							<div>
+								<span className="font-medium text-slate-900">Schedule notes:</span>
+								<p className="mt-1">{experiment.scheduleNotes}</p>
+							</div>
+						)}
 
 						<div>
 							<span className="font-medium text-slate-900">Methods:</span>
-							<p className="mt-1">{experiment.methodsText || "No methods provided."}</p>
+							<p className="mt-1">{experiment.methodsText}</p>
 						</div>
 
-						<div>
-							<span className="font-medium text-slate-900">Resources:</span>
-							<p className="mt-1">{experiment.resourcesText || "No resources provided."}</p>
-						</div>
+						{experiment.resourcesText && (
+							<div>
+								<span className="font-medium text-slate-900">Resources:</span>
+								<p className="mt-1">{experiment.resourcesText}</p>
+							</div>
+						)}
 
-						<div>
-							<span className="font-medium text-slate-900">Treatment plan:</span>
-							<p className="mt-1">
-								{experiment.treatmentPlanText || "No treatment plan provided."}
-							</p>
-						</div>
+						{experiment.treatmentPlanText && (
+							<div>
+								<span className="font-medium text-slate-900">Treatment plan:</span>
+								<p className="mt-1">{experiment.treatmentPlanText}</p>
+							</div>
+						)}
 
-						<div>
-							<span className="font-medium text-slate-900">General notes:</span>
-							<p className="mt-1">{experiment.notes || "No additional notes provided."}</p>
-						</div>
+						{experiment.notes && (
+							<div>
+								<span className="font-medium text-slate-900">General notes:</span>
+								<p className="mt-1">{experiment.notes}</p>
+							</div>
+						)}
 
 						<div>
 							<p>
@@ -206,10 +230,13 @@ function ExperimentDetailPage() {
 			)}			
 
 			{showDeleteConfirm && (
-				<div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+				<div 
+					className="rounded-2xl border border-red-200 bg-red-50 p-4"
+					ref={deleteConfirmRef}
+					tabIndex="-1"
+				>
 					<p className="text-sm font-medium text-red-800">
 						Are you sure you want to delete this experiment?
-{/* 						{window.scrollTo({ bottom: 0, behavior: "smooth" })} */}
 					</p>
 					<p className="mt-1 text-sm text-red-700">
 						This action cannot be undone.
@@ -217,8 +244,7 @@ function ExperimentDetailPage() {
 					<div className="mt-4 flex flex-col gap-3 sm:flex-row">
 						<Button
 							type="button"
-							variant="outline"
-							className="border-red-300 text-red-700 hover:bg-red-100"
+							variant="destructive"
 							onClick={handleDelete}
 							disabled={isDeleting}
 						>
@@ -228,7 +254,7 @@ function ExperimentDetailPage() {
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => setShowDeleteConfirm(false)}
+							onClick={openDeleteConfirm}
 							disabled={isDeleting}
 						>
 							Cancel
