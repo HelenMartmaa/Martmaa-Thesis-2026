@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import { authenticateToken } from "./middleware/auth.middleware.js"; // For testing middleware
 import experimentRoutes from "./routes/experiment.routes.js";
+import resultSetRoutes from "./routes/resultSet.routes.js";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/experiments", experimentRoutes);
+app.use("/api/result-sets", resultSetRoutes);
 
 /* For middleware testing;*/
 app.get("/api/protected", authenticateToken, (req, res) => {

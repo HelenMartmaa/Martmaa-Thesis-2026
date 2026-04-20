@@ -1,54 +1,56 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
-import { getExperimentByIdRequest } from "../../../features/planning/planningApi";
-import NewExperimentForm from "../../../components/planning/NewExperimentForm";
+import { getResultSetByIdRequest } from "../../../features/analysis/resultSetApi";
+import NewResultSetForm from "../../../components/analysis/NewResultSetForm";
 import { Button } from "../../../components/ui/button";
 import BackToTopButton from "../../../components/common/BackToTopButton";
 
-// Page for editing an existing experiment
-function EditExperimentPage() {
+// Page for editing an existing result set
+function EditResultSetPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { token } = useAuth();
 
-  const [experiment, setExperiment] = useState(null);
+  const [resultSet, setResultSet] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadExperiment = async () => {
+    const loadResultSet = async () => {
       try {
-        const data = await getExperimentByIdRequest(id, token);
-        setExperiment(data.experiment);
+        const data = await getResultSetByIdRequest(id, token);
+        setResultSet(data.resultSet);
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to load experiment.");
+        setError(err.response?.data?.error || "Failed to load result set.");
       } finally {
         setLoading(false);
       }
     };
 
-    loadExperiment();
+    loadResultSet();
   }, [id, token]);
 
   return (
     <section className="space-y-6">
       <div>
         <Button asChild variant="outline">
-          <Link to={`/planning/${id}`}>⮜ Back to Experiment Details</Link>
+          <Link to={`/analysis/result-sets/${id}`}>
+            ⮜ Back to Result Set Details
+          </Link>
         </Button>
       </div>
 
       <div className="space-y-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Update Experiment
+          Update Result Set
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Edit the main information of this experiment plan.
+          Edit the main information of this analysis dataset.
         </p>
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Loading experiment...</p>}
+      {loading && <p className="text-sm text-slate-500">Loading result set...</p>}
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -56,17 +58,17 @@ function EditExperimentPage() {
         </div>
       )}
 
-      {!loading && !error && experiment && (
-        <NewExperimentForm
+      {!loading && !error && resultSet && (
+        <NewResultSetForm
           mode="edit"
-          experimentId={id}
-          initialData={experiment}
-          onSuccess={() => navigate(`/planning/${id}`)}
+          resultSetId={id}
+          initialData={resultSet}
+          onSuccess={() => navigate(`/analysis/result-sets/${id}`)}
         />
       )}
-      <BackToTopButton />
+			<BackToTopButton />
     </section>
   );
 }
 
-export default EditExperimentPage;
+export default EditResultSetPage;

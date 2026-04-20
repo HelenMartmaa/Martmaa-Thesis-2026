@@ -18,6 +18,7 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
 
   experiments Experiment[]
+  resultSets  ResultSet[]
 
   @@map("users")
 }
@@ -47,6 +48,7 @@ model Experiment {
   subjects    ExperimentSubject[]
   teamMembers ExperimentTeamMember[]
   hypotheses  ExperimentHypothesis[]
+  resultSets  ResultSet[]
 
   @@map("experiments")
 }
@@ -110,4 +112,23 @@ model ExperimentHypothesis {
   experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
 
   @@map("experiment_hypotheses")
+}
+
+// First table to analysis module for basic data information
+model ResultSet {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  experimentId    Int?     @map("experiment_id")
+  title           String   @db.VarChar(255)
+  experimentType  String   @map("experiment_type") @db.VarChar(20)
+  measurementName String   @map("measurement_name") @db.VarChar(255)
+  measurementUnit String   @map("measurement_unit") @db.VarChar(50)
+  description     String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiment Experiment? @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+
+  @@map("result_sets")
 }

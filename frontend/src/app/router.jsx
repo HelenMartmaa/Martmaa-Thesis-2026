@@ -7,6 +7,11 @@ import NewExperimentPage from "../pages/private/planning/NewExperimentPage";
 import SavedExperimentsPage from "../pages/private/planning/SavedExperimentsPage";
 import ExperimentDetailPage from "../pages/private/planning/ExperimentDetailPage";
 import EditExperimentPage from "../pages/private/planning/EditExperimentPage";
+import NewResultSetPage from "../pages/private/analysis/NewResultSetPage";
+import SavedResultSetsPage from "../pages/private/analysis/SavedResultSetsPage";
+import ResultSetDetailPage from "../pages/private/analysis/ResultSetDetailPage";
+import EditResultSetPage from "../pages/private/analysis/EditResultSetPage";
+
 import PrivateLayout from "../layouts/PrivateLayout";
 /* import useAuth from "../features/auth/useAuth"; */
 
@@ -30,14 +35,18 @@ function AppRouter() {
 					<Route path="/planning/saved" element={<SavedExperimentsPage/>} />
 					<Route path="/planning/:id" element={<ExperimentDetailPage />} />
 					<Route path="/planning/:id/edit" element={<EditExperimentPage />} />
-				{/* 	if analysis pages are done add analysis routes */}
+					<Route path="/analysis/new" element={<NewResultSetPage />} />
+					<Route path="/analysis/saved" element={<SavedResultSetsPage />} />
+					<Route path="/analysis/result-sets/:id" element={<ResultSetDetailPage />} />
+					<Route path="/analysis/result-sets/:id/edit" element={<EditResultSetPage />} />
+
 				</Route>	
 
 				<Route
 					path="/analysis/new"
 					element={
 						<ProtectedRoute>
-							<PlaceholderPage title="New Analysis" />
+							<PlaceholderPage title="New Analysis Dataset" />
 						</ProtectedRoute>
 					}
 				/>
@@ -46,7 +55,7 @@ function AppRouter() {
 					path="/analysis/saved"
 					element={
 						<ProtectedRoute>
-							<PlaceholderPage title="Saved Analyses" />
+							<PlaceholderPage title="Saved Analysis Datasets" />
 						</ProtectedRoute>
 					}
 				/>
