@@ -1,21 +1,18 @@
 import { useEffect, useState } from "react";
 import useAuth from "../../features/auth/useAuth";
-import {
-  createExperimentSubjectRequest,
-  getExperimentGroupsRequest,
-  getExperimentSubjectsRequest,
-} from "../../features/planning/planningApi";
+import { createExperimentSubjectRequest, getExperimentSubjectsRequest } from "../../features/planning/planningApi";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 
 // Displays and adds experiment subjects
-function ExperimentSubjectsSection({ experimentId }) {
+function ExperimentSubjectsSection({ experimentId, groups }) {
   const { token } = useAuth();
 
+  const [subjectCodeError, setSubjectCodeError] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [subjects, setSubjects] = useState([]);
-  const [groups, setGroups] = useState([]);
   const [formData, setFormData] = useState({
     groupId: "",
     subjectCode: "",
@@ -38,18 +35,8 @@ function ExperimentSubjectsSection({ experimentId }) {
     }
   };
 
-  const loadGroups = async () => {
-    try {
-      const data = await getExperimentGroupsRequest(experimentId, token);
-      setGroups(data.groups);
-    } catch (err) {
-      // Group loading failure should not crash the whole section
-    }
-  };
-
   useEffect(() => {
     loadSubjects();
-    loadGroups();
   }, [experimentId, token]);
 
   const handleChange = (event) => {
@@ -57,11 +44,16 @@ function ExperimentSubjectsSection({ experimentId }) {
       ...prev,
       [event.target.name]: event.target.value,
     }));
+
+    if (event.target.name === "subjectCode") {
+      setSubjectCodeError("");
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    setSubjectCodeError("");
 
     try {
       await createExperimentSubjectRequest(experimentId, formData, token);
@@ -75,10 +67,21 @@ function ExperimentSubjectsSection({ experimentId }) {
         notes: "",
       });
 
-      loadSubjects();
+      await loadSubjects();
+      setShowForm(false);
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to create subject.");
-    }
+  		const message =
+    		err.response?.data?.error || "Failed to create subject.";
+
+  		if (
+    		message.toLowerCase().includes("subject") &&
+    		message.toLowerCase().includes("exists")
+  		) {
+    		setSubjectCodeError(message);
+  		} else {
+    		setError(message);
+  		}
+		}
   };
 
   return (
@@ -88,97 +91,138 @@ function ExperimentSubjectsSection({ experimentId }) {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
-            </div>
-          )}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-slate-600">
+            Add experiment subjects. A subject can optionally be linked to one of the existing groups.
+          </p>
 
-          <div className="space-y-2">
-            <Label htmlFor="subject-group">Group (optional)</Label>
-            <select
-              id="subject-group"
-              name="groupId"
-              value={formData.groupId}
-              onChange={handleChange}
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            >
-              <option value="">No group selected</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <Button type="button" onClick={() => setShowForm((prev) => !prev)}>
+            {showForm ? "Close form" : "Add new subject"}
+          </Button>
+        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="subject-code">Subject code</Label>
-            <Input
-              id="subject-code"
-              name="subjectCode"
-              value={formData.subjectCode}
-              onChange={handleChange}
-              placeholder="Example: S-001"
-              required
-            />
-          </div>
+        {showForm && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="subject-sex">Sex (optional)</Label>
-              <Input
-                id="subject-sex"
-                name="sex"
-                value={formData.sex}
+              <Label htmlFor="subject-group">Group (optional)</Label>
+              <select
+                id="subject-group"
+                name="groupId"
+                value={formData.groupId}
                 onChange={handleChange}
-                placeholder="Example: male / female"
+                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              >
+                <option value="">No group selected</option>
+                {groups.map((group) => (
+                  <option key={group.id} value={group.id}>
+                    {group.name} - {group.groupType}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subject-code">Subject code</Label>
+              <Input
+                id="subject-code"
+                name="subjectCode"
+                value={formData.subjectCode}
+                onChange={handleChange}
+                placeholder="Example: S-001"
+                required
+                aria-invalid={Boolean(subjectCodeError)}
+                aria-describedby={subjectCodeError ? "subject-code-error" : undefined }
+              />
+
+              {subjectCodeError && (
+                <p id="subject-code-error" className="text-sm text-red-600" role="alert">
+                  {subjectCodeError}
+                </p>
+              )}
+            </div>
+
+						<div className="space-y-3">
+							<Label>Sex (optional)</Label>
+
+							<div className="flex flex-wrap gap-2">
+								<Button
+									type="button"
+									variant={formData.sex === "male" ? "default" : "outline"}
+									onClick={() =>
+										setFormData((prev) => ({
+											...prev,
+											sex: prev.sex === "male" ? "" : "male",
+										}))
+									}
+								>
+									Male
+								</Button>
+
+								<Button
+									type="button"
+									variant={formData.sex === "female" ? "default" : "outline"}
+									onClick={() =>
+										setFormData((prev) => ({
+											...prev,
+											sex: prev.sex === "female" ? "" : "female",
+										}))
+									}
+								>
+									Female
+								</Button>
+							</div>
+
+							<p className="text-xs text-slate-500">
+								Leave both unselected if not specified.
+							</p>
+						</div>
+
+						<div className="space-y-2">
+							<Label htmlFor="subject-type">Subject type (optional)</Label>
+							<Input
+								id="subject-type"
+								name="subjectType"
+								value={formData.subjectType}
+								onChange={handleChange}
+								placeholder="Example: animal / sample"
+							/>
+						</div>
+
+            <div className="space-y-2">
+              <Label htmlFor="subject-genotype">Genotype (optional)</Label>
+              <Input
+                id="subject-genotype"
+                name="genotype"
+                value={formData.genotype}
+                onChange={handleChange}
+                placeholder="Add genotype if applicable"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="subject-type">Subject type (optional)</Label>
-              <Input
-                id="subject-type"
-                name="subjectType"
-                value={formData.subjectType}
+              <Label htmlFor="subject-notes">Notes (optional)</Label>
+              <textarea
+                id="subject-notes"
+                name="notes"
+                value={formData.notes}
                 onChange={handleChange}
-                placeholder="Example: animal / sample"
+                className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                placeholder="Add subject notes"
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="subject-genotype">Genotype (optional)</Label>
-            <Input
-              id="subject-genotype"
-              name="genotype"
-              value={formData.genotype}
-              onChange={handleChange}
-              placeholder="Add genotype if applicable"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="subject-notes">Notes (optional)</Label>
-            <textarea
-              id="subject-notes"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              placeholder="Add subject notes"
-            />
-          </div>
-
-          <Button type="submit">Add Subject</Button>
-        </form>
-
+            <Button type="submit">Add Subject</Button>
+          </form>
+        )}
+        
         <div className="space-y-3">
-          {loading && <p className="text-sm text-slate-500">Loading subjects...</p>}
-
-          {!loading && subjects.length === 0 && (
+          {subjects.length === 0 && (
             <p className="text-sm text-slate-500">No subjects added yet.</p>
           )}
 
@@ -189,7 +233,7 @@ function ExperimentSubjectsSection({ experimentId }) {
             >
               <p className="font-medium text-slate-900">{subject.subjectCode}</p>
               {subject.group && (
-                <p className="text-sm text-slate-600">Group: {subject.group.name}</p>
+                <p className="text-sm text-slate-600">Group: {subject.group.name} - {subject.group.groupType}</p>
               )}
               {subject.subjectType && (
                 <p className="text-sm text-slate-600">Type: {subject.subjectType}</p>

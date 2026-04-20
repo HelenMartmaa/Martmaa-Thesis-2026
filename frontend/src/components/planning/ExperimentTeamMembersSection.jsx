@@ -13,6 +13,7 @@ import { Label } from "../ui/label";
 function ExperimentTeamMembersSection({ experimentId }) {
   const { token } = useAuth();
 
+  const [showForm, setShowForm] = useState(false);
   const [teamMembers, setTeamMembers] = useState([]);
   const [formData, setFormData] = useState({
     memberName: "",
@@ -57,7 +58,8 @@ function ExperimentTeamMembersSection({ experimentId }) {
         memberEmail: "",
       });
 
-      loadTeamMembers();
+      await loadTeamMembers();
+      setShowForm(false);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to add team member.");
     }
@@ -70,50 +72,63 @@ function ExperimentTeamMembersSection({ experimentId }) {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-slate-600">
+            Add research team members and collaborators related to this experiment.
+          </p>
+
+          <Button type="button" onClick={() => setShowForm((prev) => !prev)}>
+            {showForm ? "Close form" : "Add team member"}
+          </Button>
+        </div>
+
+        {showForm && (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="member-name">Member name</Label>
+              <Input
+                id="member-name"
+                name="memberName"
+                value={formData.memberName}
+                onChange={handleChange}
+                placeholder="Enter team member name"
+                required
+              />
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="member-name">Member name</Label>
-            <Input
-              id="member-name"
-              name="memberName"
-              value={formData.memberName}
-              onChange={handleChange}
-              placeholder="Enter team member name"
-              required
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="member-role">Member role (optional)</Label>
+              <Input
+                id="member-role"
+                name="memberRole"
+                value={formData.memberRole}
+                onChange={handleChange}
+                placeholder="Example: Principal investigator"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="member-role">Member role (optional)</Label>
-            <Input
-              id="member-role"
-              name="memberRole"
-              value={formData.memberRole}
-              onChange={handleChange}
-              placeholder="Example: Principal investigator"
-            />
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="member-email">Member email (optional)</Label>
+              <Input
+                id="member-email"
+                name="memberEmail"
+                type="email"
+                value={formData.memberEmail}
+                onChange={handleChange}
+                placeholder="name@example.com"
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="member-email">Member email (optional)</Label>
-            <Input
-              id="member-email"
-              name="memberEmail"
-              type="email"
-              value={formData.memberEmail}
-              onChange={handleChange}
-              placeholder="name@example.com"
-            />
-          </div>
-
-          <Button type="submit">Add Team Member</Button>
-        </form>
+            <Button type="submit">Add Team Member</Button>
+          </form>
+        )}
+        
 
         <div className="space-y-3">
           {loading && (

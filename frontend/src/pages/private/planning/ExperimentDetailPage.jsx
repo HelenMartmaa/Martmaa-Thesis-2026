@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
-import { getExperimentByIdRequest, deleteExperimentRequest} from "../../../features/planning/planningApi";
+import { getExperimentByIdRequest, deleteExperimentRequest, getExperimentGroupsRequest } from "../../../features/planning/planningApi";
 import ExperimentGroupsSection from "../../../components/planning/ExperimentGroupsSection";
 import ExperimentSubjectsSection from "../../../components/planning/ExperimentSubjectsSection";
 import ExperimentTeamMembersSection from "../../../components/planning/ExperimentTeamMembersSection";
@@ -29,6 +29,8 @@ function ExperimentDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const [groups, setGroups] = useState([]);
+
   const deleteConfirmRef = useRef(null);
 
   // Checks whether the experiment has been updated after creation
@@ -50,6 +52,15 @@ function ExperimentDetailPage() {
 
   const closeDeleteConfirm = () => {
     setShowDeleteConfirm(false);
+  };
+
+  const loadGroups = async () => {
+    try {
+      const data = await getExperimentGroupsRequest(id, token);
+      setGroups(data.groups);
+    } catch (err) {
+      // Groups should not break the whole detail page
+    }
   };
 
   // Deletes existing experiment
@@ -75,6 +86,7 @@ function ExperimentDetailPage() {
       try {
         const data = await getExperimentByIdRequest(id, token);
         setExperiment(data.experiment);
+        await loadGroups();
       } catch (err) {
         setError(err.response?.data?.error || "Failed to load experiment.");
       } finally {
@@ -251,6 +263,55 @@ function ExperimentDetailPage() {
             </CardContent>
           </Card>
 
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild variant="outline">
+              <Link to={`/planning/${id}/edit`}>
+                Update Experiment Main Information
+              </Link>
+            </Button>
+          </div>
+
+          
+          <div className="mb-8 space-y-3">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Additional Data Section
+            </h2>
+            <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+              Add, update or delete the specific experiment data.
+            </p>
+          </div>
+
+          <ExperimentGroupsSection
+            experimentId={id}
+            groups={groups}
+            setGroups={setGroups}
+          />
+          <ExperimentSubjectsSection
+            experimentId={id}
+            groups={groups}
+          />
+
+          <div className="mb-8 space-y-3">
+            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Collaborators section
+            </h2>
+            <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
+              Add, update or delete the main details of the members of the
+              research team.
+            </p>
+          </div>
+
+          <ExperimentTeamMembersSection experimentId={id} />
+        </div>
+      )}
+
+
+          {deleteError && (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {deleteError}
+            </div>
+          )}
+
           {showDeleteConfirm && (
             <div
               ref={deleteConfirmRef}
@@ -285,20 +346,7 @@ function ExperimentDetailPage() {
               </div>
             </div>
           )}
-
-          {deleteError && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {deleteError}
-            </div>
-          )}
-
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild variant="outline">
-              <Link to={`/planning/${id}/edit`}>
-                Update Experiment Main Information
-              </Link>
-            </Button>
-
             <Button
               type="button"
               variant="destructive"
@@ -307,33 +355,6 @@ function ExperimentDetailPage() {
               Delete Experiment
             </Button>
           </div>
-
-          <div className="mb-8 space-y-3">
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Additional Data Section
-            </h2>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-              Add, update or delete the main details of subject groups and their
-              data.
-            </p>
-          </div>
-
-          <ExperimentGroupsSection experimentId={id} />
-          <ExperimentSubjectsSection experimentId={id} />
-
-          <div className="mb-8 space-y-3">
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Collaborators section
-            </h2>
-            <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-              Add, update or delete the main details of the members of the
-              research team.
-            </p>
-          </div>
-
-          <ExperimentTeamMembersSection experimentId={id} />
-        </div>
-      )}
 
       <BackToTopButton />
     </section>

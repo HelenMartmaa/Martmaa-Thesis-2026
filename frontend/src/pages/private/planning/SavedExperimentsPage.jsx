@@ -35,6 +35,13 @@ function SavedExperimentsPage() {
     loadExperiments();
   }, [token]);
 
+  const StatusMark = ({ isReady }) => (
+		<span className={isReady ? "text-green-600" : "text-red-600"}>
+			{isReady ? "✔" : "✘"}
+		</span>
+	);
+
+
   return (
     <section className="space-y-8">
       <div className="mb-8 space-y-3">
@@ -98,6 +105,21 @@ function SavedExperimentsPage() {
 									{new Date(experiment.updatedAt).toLocaleString()}
 								</div>
 							)}
+
+							<div className="space-y-1 text-sm text-slate-600">
+								<p className="flex items-center gap-2">
+									<StatusMark isReady={experiment.groups?.length > 0} />
+									Groups added
+								</p>
+								<p className="flex items-center gap-2">
+									<StatusMark isReady={experiment.subjects?.length > 0} />
+									Subjects added
+								</p>
+								<p className="flex items-center gap-2">
+									<StatusMark isReady={experiment.teamMembers?.length > 0} />
+									Team members added
+								</p>
+							</div>
 
 							<div className="pt-2">
 								<Button asChild variant="outline">

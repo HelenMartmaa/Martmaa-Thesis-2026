@@ -34,4 +34,15 @@ const getExperimentSubjectsByExperimentId = async (experimentId) => {
   });
 };
 
-export { createExperimentSubject, getExperimentSubjectsByExperimentId };
+// Returns one subject by subject code inside one experiment
+const getExperimentSubjectByCode = async (experimentId, subjectCode) => {
+  return prisma.experimentSubject.findFirst({
+    where: {
+      experimentId,
+      subjectCode,
+    },
+  });
+};
+
+
+export { createExperimentSubject, getExperimentSubjectsByExperimentId, getExperimentSubjectByCode };

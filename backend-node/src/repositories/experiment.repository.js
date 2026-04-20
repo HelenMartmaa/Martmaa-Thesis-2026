@@ -51,6 +51,11 @@ const getExperimentsByUserId = async (userId) => {
   return prisma.experiment.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: {
+      groups: true,
+      subjects: true,
+      teamMembers: true,
+    },
   });
 };
 

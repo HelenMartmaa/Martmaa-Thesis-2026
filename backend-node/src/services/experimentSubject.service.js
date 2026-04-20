@@ -1,4 +1,4 @@
-import { createExperimentSubject, getExperimentSubjectsByExperimentId } from "../repositories/experimentSubject.repository.js";
+import { createExperimentSubject, getExperimentSubjectsByExperimentId,  getExperimentSubjectByCode } from "../repositories/experimentSubject.repository.js";
 import { getExperimentByIdAndUserId } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new subject for an experiment
@@ -29,6 +29,15 @@ const createExperimentSubjectService = async ({
   if (!trimmedSubjectCode) {
     throw new Error("Subject code is required.");
   }
+
+	const existingSubject = await getExperimentSubjectByCode(
+		parsedExperimentId,
+		trimmedSubjectCode
+	);
+
+	if (existingSubject) {
+		throw new Error("A subject with this code already exists in this experiment.");
+	}
 
   return createExperimentSubject({
     experimentId: parsedExperimentId,

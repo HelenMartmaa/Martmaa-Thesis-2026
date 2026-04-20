@@ -25,4 +25,14 @@ const getExperimentGroupsByExperimentId = async (experimentId) => {
   });
 };
 
-export { createExperimentGroup, getExperimentGroupsByExperimentId };
+// Returns one group by name inside one experiment
+const getExperimentGroupByName = async (experimentId, name) => {
+  return prisma.experimentGroup.findFirst({
+    where: {
+      experimentId,
+      name,
+    },
+  });
+};
+
+export { createExperimentGroup, getExperimentGroupsByExperimentId, getExperimentGroupByName };

@@ -27,14 +27,14 @@ model Experiment {
   id                Int       @id @default(autoincrement())
   userId            Int       @map("user_id")
   title             String    @db.VarChar(255)
-  description       String?
-  aim               String?
+  description       String
+  aim               String
   experimentType    String    @map("experiment_type") @db.VarChar(20)
-  organismName      String?   @map("organism_name") @db.VarChar(255)
+  organismName      String    @map("organism_name") @db.VarChar(255)
   startDate         DateTime? @map("start_date") @db.Date
   endDate           DateTime? @map("end_date") @db.Date
   scheduleNotes     String?   @map("schedule_notes")
-  methodsText       String?   @map("methods_text")
+  methodsText       String    @map("methods_text")
   resourcesText     String?   @map("resources_text")
   treatmentPlanText String?   @map("treatment_plan_text")
   notes             String?
@@ -63,6 +63,7 @@ model ExperimentGroup {
   experiment Experiment          @relation(fields: [experimentId], references: [id], onDelete: Cascade)
   subjects   ExperimentSubject[]
 
+  @@unique([experimentId, name])
   @@map("experiment_groups")
 }
 
@@ -81,6 +82,7 @@ model ExperimentSubject {
   experiment Experiment       @relation(fields: [experimentId], references: [id], onDelete: Cascade)
   group      ExperimentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
+  @@unique([experimentId, subjectCode])
   @@map("experiment_subjects")
 }
 

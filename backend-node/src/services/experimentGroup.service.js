@@ -1,4 +1,4 @@
-import { createExperimentGroup, getExperimentGroupsByExperimentId } from "../repositories/experimentGroup.repository.js";
+import { createExperimentGroup, getExperimentGroupsByExperimentId, getExperimentGroupByName } from "../repositories/experimentGroup.repository.js";
 import { getExperimentByIdAndUserId } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new group for an experiment
@@ -26,6 +26,15 @@ const createExperimentGroupService = async ({
 
   if (!trimmedName || !trimmedGroupType) {
     throw new Error("Group name and group type are required.");
+  }
+
+  const existingGroup = await getExperimentGroupByName(
+    parsedExperimentId,
+    trimmedName
+  );
+
+  if (existingGroup) {
+    throw new Error("A group with this name already exists in this experiment.");
   }
 
   return createExperimentGroup({
