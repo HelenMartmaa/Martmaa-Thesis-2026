@@ -44,5 +44,54 @@ const getExperimentSubjectByCode = async (experimentId, subjectCode) => {
   });
 };
 
+// Returns one subject by id
+const getExperimentSubjectById = async (subjectId) => {
+  return prisma.experimentSubject.findUnique({
+    where: { id: subjectId },
+    include: {
+      group: true,
+    },
+  });
+};
 
-export { createExperimentSubject, getExperimentSubjectsByExperimentId, getExperimentSubjectByCode };
+// Updates one subject by id
+const updateExperimentSubjectById = async ({
+  subjectId,
+  groupId,
+  subjectCode,
+  sex,
+  genotype,
+  subjectType,
+  notes,
+}) => {
+  return prisma.experimentSubject.update({
+    where: { id: subjectId },
+    data: {
+      groupId,
+      subjectCode,
+      sex,
+      genotype,
+      subjectType,
+      notes,
+    },
+    include: {
+      group: true,
+    },
+  });
+};
+
+// Deletes one subject by id
+const deleteExperimentSubjectById = async (subjectId) => {
+  return prisma.experimentSubject.delete({
+    where: { id: subjectId },
+  });
+};
+
+export {
+  createExperimentSubject,
+  getExperimentSubjectsByExperimentId,
+  getExperimentSubjectByCode,
+  getExperimentSubjectById,
+  updateExperimentSubjectById,
+  deleteExperimentSubjectById,
+};

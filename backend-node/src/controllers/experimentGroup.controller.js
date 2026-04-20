@@ -1,4 +1,9 @@
-import { createExperimentGroupService, getExperimentGroupsService } from "../services/experimentGroup.service.js";
+import {
+  createExperimentGroupService,
+  getExperimentGroupsService,
+  updateExperimentGroupService,
+  deleteExperimentGroupService,
+} from "../services/experimentGroup.service.js";
 
 // Handles request for creating a new experiment group
 const createExperimentGroupController = async (req, res) => {
@@ -13,7 +18,6 @@ const createExperimentGroupController = async (req, res) => {
       message: "Experiment group created successfully.",
       group,
     });
-
   } catch (error) {
     return res.status(400).json({
       error: error.message,
@@ -39,4 +43,49 @@ const getExperimentGroupsController = async (req, res) => {
   }
 };
 
-export { createExperimentGroupController, getExperimentGroupsController };
+// Handles request for updating one group
+const updateExperimentGroupController = async (req, res) => {
+  try {
+    const group = await updateExperimentGroupService({
+      experimentId: req.params.experimentId,
+      groupId: req.params.groupId,
+      userId: req.user.userId,
+      ...req.body,
+    });
+
+    return res.status(200).json({
+      message: "Experiment group updated successfully.",
+      group,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+};
+
+// Handles request for deleting one group
+const deleteExperimentGroupController = async (req, res) => {
+  try {
+    await deleteExperimentGroupService({
+      experimentId: req.params.experimentId,
+      groupId: req.params.groupId,
+      userId: req.user.userId,
+    });
+
+    return res.status(200).json({
+      message: "Experiment group deleted successfully.",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      error: error.message,
+    });
+  }
+};
+
+export {
+  createExperimentGroupController,
+  getExperimentGroupsController,
+  updateExperimentGroupController,
+  deleteExperimentGroupController,
+};

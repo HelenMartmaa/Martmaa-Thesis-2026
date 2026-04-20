@@ -132,6 +132,111 @@ const createExperimentTeamMemberRequest = async (
   return response.data;
 };
 
+// Updates one group for one experiment
+const updateExperimentGroupRequest = async (experimentId, groupId, data, token) => {
+  const response = await apiClient.put(
+    `/experiments/${experimentId}/groups/${groupId}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Deletes one group for one experiment
+const deleteExperimentGroupRequest = async (experimentId, groupId, token) => {
+  const response = await apiClient.delete(
+    `/experiments/${experimentId}/groups/${groupId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Updates one subject for one experiment
+const updateExperimentSubjectRequest = async (
+  experimentId,
+  subjectId,
+  data,
+  token
+) => {
+  const response = await apiClient.put(
+    `/experiments/${experimentId}/subjects/${subjectId}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Deletes one subject for one experiment
+const deleteExperimentSubjectRequest = async (
+  experimentId,
+  subjectId,
+  token
+) => {
+  const response = await apiClient.delete(
+    `/experiments/${experimentId}/subjects/${subjectId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Updates one team member for one experiment
+const updateExperimentTeamMemberRequest = async (
+  experimentId,
+  memberId,
+  data,
+  token
+) => {
+  const response = await apiClient.put(
+    `/experiments/${experimentId}/team-members/${memberId}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Deletes one team member for one experiment
+const deleteExperimentTeamMemberRequest = async (
+  experimentId,
+  memberId,
+  token
+) => {
+  const response = await apiClient.delete(
+    `/experiments/${experimentId}/team-members/${memberId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
 export {
   createExperimentRequest,
   getSavedExperimentsRequest,
@@ -140,8 +245,14 @@ export {
   deleteExperimentRequest,
   getExperimentGroupsRequest,
   createExperimentGroupRequest,
+  updateExperimentGroupRequest,
+  deleteExperimentGroupRequest,
   getExperimentSubjectsRequest,
   createExperimentSubjectRequest,
   getExperimentTeamMembersRequest,
-  createExperimentTeamMemberRequest
+  createExperimentTeamMemberRequest,
+  updateExperimentSubjectRequest,
+  deleteExperimentSubjectRequest,
+  updateExperimentTeamMemberRequest,
+  deleteExperimentTeamMemberRequest
 };

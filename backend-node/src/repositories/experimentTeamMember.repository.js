@@ -25,4 +25,41 @@ const getExperimentTeamMembersByExperimentId = async (experimentId) => {
   });
 };
 
-export { createExperimentTeamMember, getExperimentTeamMembersByExperimentId };
+// Returns one team member by id
+const getExperimentTeamMemberById = async (memberId) => {
+  return prisma.experimentTeamMember.findUnique({
+    where: { id: memberId },
+  });
+};
+
+// Updates one team member by id
+const updateExperimentTeamMemberById = async ({
+  memberId,
+  memberName,
+  memberRole,
+  memberEmail,
+}) => {
+  return prisma.experimentTeamMember.update({
+    where: { id: memberId },
+    data: {
+      memberName,
+      memberRole,
+      memberEmail,
+    },
+  });
+};
+
+// Deletes one team member by id
+const deleteExperimentTeamMemberById = async (memberId) => {
+  return prisma.experimentTeamMember.delete({
+    where: { id: memberId },
+  });
+};
+
+export {
+  createExperimentTeamMember,
+  getExperimentTeamMembersByExperimentId,
+  getExperimentTeamMemberById,
+  updateExperimentTeamMemberById,
+  deleteExperimentTeamMemberById,
+};

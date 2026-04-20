@@ -35,4 +35,42 @@ const getExperimentGroupByName = async (experimentId, name) => {
   });
 };
 
-export { createExperimentGroup, getExperimentGroupsByExperimentId, getExperimentGroupByName };
+// Returns one group by its id
+const getExperimentGroupById = async (groupId) => {
+  return prisma.experimentGroup.findUnique({
+    where: { id: groupId },
+  });
+};
+
+// Updates one group by id
+const updateExperimentGroupById = async ({
+  groupId,
+  name,
+  groupType,
+  description,
+}) => {
+  return prisma.experimentGroup.update({
+    where: { id: groupId },
+    data: {
+      name,
+      groupType,
+      description,
+    },
+  });
+};
+
+// Deletes one group by id
+const deleteExperimentGroupById = async (groupId) => {
+  return prisma.experimentGroup.delete({
+    where: { id: groupId },
+  });
+};
+
+export { 
+  createExperimentGroup, 
+  getExperimentGroupsByExperimentId, 
+  getExperimentGroupByName, 
+  getExperimentGroupById, 
+  updateExperimentGroupById, 
+  deleteExperimentGroupById 
+};
