@@ -64,6 +64,7 @@ model ExperimentGroup {
 
   experiment Experiment          @relation(fields: [experimentId], references: [id], onDelete: Cascade)
   subjects   ExperimentSubject[]
+  entries    ResultEntry[]
 
   @@unique([experimentId, name])
   @@map("experiment_groups")
@@ -83,6 +84,7 @@ model ExperimentSubject {
 
   experiment Experiment       @relation(fields: [experimentId], references: [id], onDelete: Cascade)
   group      ExperimentGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  entries    ResultEntry[]
 
   @@unique([experimentId, subjectCode])
   @@map("experiment_subjects")
@@ -122,13 +124,35 @@ model ResultSet {
   title           String   @db.VarChar(255)
   experimentType  String   @map("experiment_type") @db.VarChar(20)
   measurementName String   @map("measurement_name") @db.VarChar(255)
-  measurementUnit String   @map("measurement_unit") @db.VarChar(50)
+  measurementUnit String?  @map("measurement_unit") @db.VarChar(50)
   description     String?
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  experiment Experiment? @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiment Experiment?   @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+  entries    ResultEntry[]
 
   @@map("result_sets")
+}
+
+model ResultEntry {
+  id             Int     @id @default(autoincrement())
+  resultSetId    Int     @map("result_set_id")
+  subjectId      Int?    @map("subject_id")
+  groupId        Int?    @map("group_id")
+  sampleCode     String? @map("sample_code") @db.VarChar(100)
+  groupLabel     String? @map("group_label") @db.VarChar(100)
+  sex            String? @db.VarChar(20)
+  timepointValue Float?  @map("timepoint_value")
+  timepointUnit  String? @map("timepoint_unit") @db.VarChar(20)
+  numericValue   Float   @map("numeric_value")
+  eventOccurred  Int?    @map("event_occurred")
+  notes          String?
+
+  resultSet ResultSet          @relation(fields: [resultSetId], references: [id], onDelete: Cascade)
+  subject   ExperimentSubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  group     ExperimentGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@map("result_entries")
 }

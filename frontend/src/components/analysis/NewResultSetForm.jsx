@@ -18,13 +18,13 @@ function FieldRequirement({ required }) {
     </span>
   );
 }
-
 // Shared form for creating and editing result sets
 function NewResultSetForm({
-  mode = "create",
-  initialData = null,
-  resultSetId = null,
-  onSuccess = null,
+	mode = "create",
+	initialData = null,
+	resultSetId = null,
+	onSuccess = null,
+	onCreateSuccess = null,
 }) {
   const { token } = useAuth();
 
@@ -133,10 +133,15 @@ function NewResultSetForm({
           onSuccess();
         }
       } else {
-        await createResultSetRequest(formData, token);
-        resetForm({ clearSuccess: false });
-        setSuccessMessage("Result set created successfully.");
-        setShowForm(false);
+				const response = await createResultSetRequest(formData, token);
+
+				resetForm({ clearSuccess: false });
+				setSuccessMessage("Result set created successfully.");
+				setShowForm(false);
+
+				if (onCreateSuccess) {
+					onCreateSuccess(response.resultSet);
+				}
       }
     } catch (err) {
       setError(err.response?.data?.error || "Failed to save result set.");

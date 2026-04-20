@@ -5,6 +5,7 @@ import {
   getResultSetByIdRequest,
   deleteResultSetRequest,
 } from "../../../features/analysis/resultSetApi";
+import ResultEntriesSection from "../../../components/analysis/ResultEntriesSection";
 import { Button } from "../../../components/ui/button";
 import BackToTopButton from "../../../components/common/BackToTopButton";
 import {
@@ -121,7 +122,7 @@ function ResultSetDetailPage() {
 
               <div>
                 <span className="font-medium text-slate-900">Experiment type:</span>{" "}
-                {formatExperimentType(resultSet.experimentType)}
+                <i>{formatExperimentType(resultSet.experimentType)}</i>
               </div>
 
               <div>
@@ -156,6 +157,19 @@ function ResultSetDetailPage() {
               )}
             </CardContent>
           </Card>
+					
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button asChild variant="outline">
+              <Link to={`/analysis/result-sets/${id}/edit`}>
+                Update Result Set
+              </Link>
+            </Button>
+          </div>
+
+					<ResultEntriesSection
+  					resultSetId={id}
+  					experimentId={resultSet.experimentId}
+					/>
 
           {showDeleteConfirm && (
             <div
@@ -199,12 +213,6 @@ function ResultSetDetailPage() {
           )}
 
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild variant="outline">
-              <Link to={`/analysis/result-sets/${id}/edit`}>
-                Update Result Set
-              </Link>
-            </Button>
-
             <Button
               type="button"
               variant="destructive"

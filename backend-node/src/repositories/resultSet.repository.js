@@ -12,13 +12,21 @@ const createResultSet = async ({
 }) => {
   return prisma.resultSet.create({
     data: {
-      userId,
-      experimentId,
       title,
       experimentType,
       measurementName,
-      measurementUnit,
-      description,
+      measurementUnit: measurementUnit || null,
+      description: description || null,
+      user: {
+        connect: { id: userId },
+      },
+      ...(experimentId
+        ? {
+            experiment: {
+              connect: { id: experimentId },
+            },
+          }
+        : {}),
     },
     include: {
       experiment: true,
@@ -63,12 +71,22 @@ const updateResultSetById = async ({
   return prisma.resultSet.update({
     where: { id: resultSetId },
     data: {
-      experimentId,
       title,
       experimentType,
       measurementName,
-      measurementUnit,
-      description,
+      measurementUnit: measurementUnit || null,
+      description: description || null,
+      ...(experimentId
+        ? {
+            experiment: {
+              connect: { id: experimentId },
+            },
+          }
+        : {
+            experiment: {
+              disconnect: true,
+            },
+          }),
     },
     include: {
       experiment: true,
