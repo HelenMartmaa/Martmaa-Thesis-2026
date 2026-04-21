@@ -1,11 +1,190 @@
-import { useState } from "react";
-import NewResultSetForm from "../../../components/analysis/NewResultSetForm";
-import ResultEntriesSection from "../../../components/analysis/ResultEntriesSection";
+import { useEffect, useMemo, useRef, useState } from "react";
+import useAuth from "../../../features/auth/useAuth";
+import { getSavedExperimentsRequest } from "../../../features/planning/planningApi";
+import { createResultSetRequest } from "../../../features/analysis/resultSetApi";
+import { createResultEntryRequest } from "../../../features/analysis/resultEntryApi";
+import ResultSetDetailsSection from "../../../components/analysis/ResultSetDetailsSection";
+import ResultSetSummaryCard from "../../../components/analysis/ResultSetSummaryCard";
+import ResultEntriesEditorSection from "../../../components/analysis/ResultEntriesEditorSection";
 import BackToTopButton from "../../../components/common/BackToTopButton";
+import { Button } from "../../../components/ui/button";
 
-// Page for creating a new result set and continuing directly to entries
+const createEmptyRow = () => ({
+  subjectId: "",
+  groupId: "",
+  sampleCode: "",
+  groupLabel: "",
+  sex: "",
+  numericValue: "",
+});
+
+// Combined page for creating a result set together with its entries
 function NewResultSetPage() {
-  const [createdResultSet, setCreatedResultSet] = useState(null);
+  const { token } = useAuth();
+
+  const errorRef = useRef(null);
+  const successRef = useRef(null);
+
+  const [experiments, setExperiments] = useState([]);
+  const [loadingExperiments, setLoadingExperiments] = useState(true);
+
+  const [formData, setFormData] = useState({
+    experimentId: "",
+    title: "",
+    experimentType: "in_vivo",
+    measurementName: "",
+    measurementUnit: "",
+    description: "",
+  });
+
+  const [rows, setRows] = useState([createEmptyRow()]);
+  const [generalNotes, setGeneralNotes] = useState("");
+
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // For error message
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      errorRef.current.focus();
+    }
+  }, [error]);
+
+  // For success message
+  useEffect(() => {
+    if (successMessage && successRef.current) {
+      successRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      successRef.current.focus();
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    const loadExperiments = async () => {
+      try {
+        const data = await getSavedExperimentsRequest(token);
+        setExperiments(data.experiments || []);
+      } catch (err) {
+        setError("Failed to load experiments.");
+      } finally {
+        setLoadingExperiments(false);
+      }
+    };
+
+    loadExperiments();
+  }, [token]);
+
+  const selectedExperimentTitle = useMemo(() => {
+    const selected = experiments.find(
+      (experiment) => String(experiment.id) === String(formData.experimentId)
+    );
+
+    return selected?.title || "";
+  }, [experiments, formData.experimentId]);
+
+  const resetPage = () => {
+    setFormData({
+      experimentId: "",
+      title: "",
+      experimentType: "in_vivo",
+      measurementName: "",
+      measurementUnit: "",
+      description: "",
+    });
+
+    setRows([createEmptyRow()]);
+    setGeneralNotes("");
+    setError("");
+    setSuccessMessage("");
+  };
+
+  const validateBeforeSave = () => {
+    if (!formData.title.trim()) {
+      return "Result set title is required.";
+    }
+
+    if (!formData.experimentType) {
+      return "Experiment type is required.";
+    }
+
+    if (!formData.measurementName.trim()) {
+      return "Measurement name is required.";
+    }
+
+    if (rows.length === 0) {
+      return "At least one result entry row is required.";
+    }
+
+    for (const row of rows) {
+      if (row.numericValue === "" || row.numericValue === null) {
+        return "Each row must contain a numeric value.";
+      }
+
+      const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
+      const parsedValue = Number(normalizedValue);
+
+      if (!Number.isFinite(parsedValue)) {
+        return "Each row must contain a valid numeric value.";
+      }
+    }
+
+    return "";
+  };
+
+  const handleSaveDatasetAndEntries = async () => {
+    setError("");
+    setSuccessMessage("");
+
+    const validationError = validateBeforeSave();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const resultSetResponse = await createResultSetRequest(formData, token);
+      const createdSet = resultSetResponse.resultSet;
+
+      for (const row of rows) {
+        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
+
+        const payload = {
+          subjectId: formData.experimentId ? row.subjectId || null : null,
+          groupId: formData.experimentId ? row.groupId || null : null,
+          sampleCode: !formData.experimentId ? row.sampleCode || null : null,
+          groupLabel: !formData.experimentId ? row.groupLabel || null : null,
+          sex: row.sex || null,
+          timepointValue: null,
+          timepointUnit: null,
+          numericValue: Number(normalizedValue),
+          eventOccurred: null,
+          notes: generalNotes || null,
+        };
+
+        await createResultEntryRequest(createdSet.id, payload, token);
+      }
+
+      setSuccessMessage("Result set and entries were saved successfully.");
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.message ||
+          "Failed to save result set and entries."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section className="space-y-8">
@@ -14,19 +193,69 @@ function NewResultSetPage() {
           New Result Set
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Create a new analysis dataset and, once saved, continue directly to
-          entering result values.
+          Define the dataset details, enter the measured values below, and save
+          everything together in one flow.
         </p>
       </div>
 
-      <NewResultSetForm onCreateSuccess={setCreatedResultSet} />
-
-      {createdResultSet && (
-        <ResultEntriesSection
-          resultSetId={createdResultSet.id}
-          experimentId={createdResultSet.experimentId}
-        />
+      {error && (
+        <div
+          ref={errorRef}
+          tabIndex="-1"
+          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 outline-none"
+        >
+          {error}
+        </div>
       )}
+
+      {successMessage && (
+        <div
+          ref={successRef}
+          tabIndex="-1"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 outline-none"
+        >
+          {successMessage}
+        </div>
+      )}
+
+      <ResultSetDetailsSection
+        formData={formData}
+        setFormData={setFormData}
+        experiments={experiments}
+        loadingExperiments={loadingExperiments}
+      />
+
+      <ResultSetSummaryCard
+        formData={formData}
+        selectedExperimentTitle={selectedExperimentTitle}
+      />
+
+      <ResultEntriesEditorSection
+        experimentId={formData.experimentId}
+        rows={rows}
+        setRows={setRows}
+        generalNotes={generalNotes}
+        setGeneralNotes={setGeneralNotes}
+      />
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Button
+          type="button"
+          onClick={handleSaveDatasetAndEntries}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Saving..." : "Save dataset and entries"}
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={resetPage}
+          disabled={isSubmitting}
+        >
+          Clear all
+        </Button>
+      </div>
 
       <BackToTopButton />
     </section>

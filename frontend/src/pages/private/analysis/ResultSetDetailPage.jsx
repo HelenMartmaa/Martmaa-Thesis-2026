@@ -6,6 +6,8 @@ import {
   deleteResultSetRequest,
 } from "../../../features/analysis/resultSetApi";
 import ResultEntriesSection from "../../../components/analysis/ResultEntriesSection";
+import { getResultEntriesRequest } from "../../../features/analysis/resultEntryApi";
+import ResultEntriesTable from "../../../components/analysis/ResultEntriesTable";
 import { Button } from "../../../components/ui/button";
 import BackToTopButton from "../../../components/common/BackToTopButton";
 import {
@@ -28,6 +30,7 @@ function ResultSetDetailPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
 
+	const [entries, setEntries] = useState([]);
   const [resultSet, setResultSet] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -37,20 +40,30 @@ function ResultSetDetailPage() {
 
   const deleteConfirmRef = useRef(null);
 
-  useEffect(() => {
-    const loadResultSet = async () => {
-      try {
-        const data = await getResultSetByIdRequest(id, token);
-        setResultSet(data.resultSet);
-      } catch (err) {
-        setError(err.response?.data?.error || "Failed to load result set.");
-      } finally {
-        setLoading(false);
-      }
-    };
+	useEffect(() => {
+		const loadResultSet = async () => {
+			try {
+				const data = await getResultSetByIdRequest(id, token);
+				setResultSet(data.resultSet);
+				await loadResultEntries();
+			} catch (err) {
+				setError(err.response?.data?.error || "Failed to load result set.");
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    loadResultSet();
-  }, [id, token]);
+		loadResultSet();
+	}, [id, token]);
+
+	const loadResultEntries = async () => {
+		try {
+			const data = await getResultEntriesRequest(id, token);
+			setEntries(data.entries || []);
+		} catch (err) {
+			// Entries failure should not break the whole page
+		}
+	};
 
   useEffect(() => {
     if (showDeleteConfirm && deleteConfirmRef.current) {
@@ -158,17 +171,11 @@ function ResultSetDetailPage() {
             </CardContent>
           </Card>
 					
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild variant="outline">
-              <Link to={`/analysis/result-sets/${id}/edit`}>
-                Update Result Set
-              </Link>
-            </Button>
-          </div>
 
-					<ResultEntriesSection
-  					resultSetId={id}
-  					experimentId={resultSet.experimentId}
+
+					<ResultEntriesTable
+						entries={entries}
+						isLinkedExperiment={Boolean(resultSet.experimentId)}
 					/>
 
           {showDeleteConfirm && (
@@ -212,7 +219,13 @@ function ResultSetDetailPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row">          
+            <Button asChild variant="outline">
+              <Link to={`/analysis/result-sets/${id}/edit`}>
+                Update Result Set
+              </Link>
+            </Button>
+
             <Button
               type="button"
               variant="destructive"
