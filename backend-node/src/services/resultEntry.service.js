@@ -1,6 +1,9 @@
 import {
   createResultEntry,
-  getResultEntriesByResultSetId
+  getResultEntriesByResultSetId,
+  getResultEntryById,
+  updateResultEntryById,
+  deleteResultEntryById,
 } from "../repositories/resultEntry.repository.js";
 import { getResultSetByIdAndUserId } from "../repositories/resultSet.repository.js";
 
@@ -37,7 +40,7 @@ const createResultEntryService = async ({
 
   const parsedNumericValue = Number(numericValue);
 
-  if (Number.isNaN(parsedNumericValue)) {
+  if (!Number.isFinite(parsedNumericValue)) {
     throw new Error("Numeric value must be a valid number.");
   }
 
@@ -59,10 +62,7 @@ const createResultEntryService = async ({
       ? Number(eventOccurred)
       : null;
 
-  if (
-    parsedEventOccurred !== null &&
-    ![0, 1].includes(parsedEventOccurred)
-  ) {
+  if (parsedEventOccurred !== null && ![0, 1].includes(parsedEventOccurred)) {
     throw new Error("Event occurred must be either 0 or 1.");
   }
 
@@ -98,4 +98,125 @@ const getResultEntriesService = async ({ resultSetId, userId }) => {
   return getResultEntriesByResultSetId(parsedResultSetId);
 };
 
-export { createResultEntryService, getResultEntriesService };
+// Updates one result entry
+const updateResultEntryService = async ({
+  resultSetId,
+  entryId,
+  userId,
+  subjectId,
+  groupId,
+  sampleCode,
+  groupLabel,
+  sex,
+  timepointValue,
+  timepointUnit,
+  numericValue,
+  eventOccurred,
+  notes,
+}) => {
+  const parsedResultSetId = Number(resultSetId);
+  const parsedEntryId = Number(entryId);
+
+  if (
+    !parsedResultSetId ||
+    Number.isNaN(parsedResultSetId) ||
+    !parsedEntryId ||
+    Number.isNaN(parsedEntryId)
+  ) {
+    throw new Error("Invalid id.");
+  }
+
+  const resultSet = await getResultSetByIdAndUserId(parsedResultSetId, userId);
+
+  if (!resultSet) {
+    throw new Error("Result set not found.");
+  }
+
+  const existingEntry = await getResultEntryById(parsedEntryId);
+
+  if (!existingEntry || existingEntry.resultSetId !== parsedResultSetId) {
+    throw new Error("Result entry not found.");
+  }
+
+  if (numericValue === undefined || numericValue === null || numericValue === "") {
+    throw new Error("Numeric value is required.");
+  }
+
+  const parsedNumericValue = Number(numericValue);
+
+  if (!Number.isFinite(parsedNumericValue)) {
+    throw new Error("Numeric value must be a valid number.");
+  }
+
+  const parsedTimepointValue =
+    timepointValue !== undefined &&
+    timepointValue !== null &&
+    timepointValue !== ""
+      ? Number(timepointValue)
+      : null;
+
+  if (parsedTimepointValue !== null && Number.isNaN(parsedTimepointValue)) {
+    throw new Error("Timepoint value must be a valid number.");
+  }
+
+  const parsedEventOccurred =
+    eventOccurred !== undefined &&
+    eventOccurred !== null &&
+    eventOccurred !== ""
+      ? Number(eventOccurred)
+      : null;
+
+  if (parsedEventOccurred !== null && ![0, 1].includes(parsedEventOccurred)) {
+    throw new Error("Event occurred must be either 0 or 1.");
+  }
+
+  return updateResultEntryById({
+    entryId: parsedEntryId,
+    subjectId: subjectId ? Number(subjectId) : null,
+    groupId: groupId ? Number(groupId) : null,
+    sampleCode: sampleCode?.trim() || null,
+    groupLabel: groupLabel?.trim() || null,
+    sex: sex?.trim() || null,
+    timepointValue: parsedTimepointValue,
+    timepointUnit: timepointUnit?.trim() || null,
+    numericValue: parsedNumericValue,
+    eventOccurred: parsedEventOccurred,
+    notes: notes?.trim() || null,
+  });
+};
+
+// Deletes one result entry
+const deleteResultEntryService = async ({ resultSetId, entryId, userId }) => {
+  const parsedResultSetId = Number(resultSetId);
+  const parsedEntryId = Number(entryId);
+
+  if (
+    !parsedResultSetId ||
+    Number.isNaN(parsedResultSetId) ||
+    !parsedEntryId ||
+    Number.isNaN(parsedEntryId)
+  ) {
+    throw new Error("Invalid id.");
+  }
+
+  const resultSet = await getResultSetByIdAndUserId(parsedResultSetId, userId);
+
+  if (!resultSet) {
+    throw new Error("Result set not found.");
+  }
+
+  const existingEntry = await getResultEntryById(parsedEntryId);
+
+  if (!existingEntry || existingEntry.resultSetId !== parsedResultSetId) {
+    throw new Error("Result entry not found.");
+  }
+
+  return deleteResultEntryById(parsedEntryId);
+};
+
+export {
+  createResultEntryService,
+  getResultEntriesService,
+  updateResultEntryService,
+  deleteResultEntryService
+};

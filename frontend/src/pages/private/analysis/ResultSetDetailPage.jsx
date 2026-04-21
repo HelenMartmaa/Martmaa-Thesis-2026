@@ -5,7 +5,6 @@ import {
   getResultSetByIdRequest,
   deleteResultSetRequest,
 } from "../../../features/analysis/resultSetApi";
-import ResultEntriesSection from "../../../components/analysis/ResultEntriesSection";
 import { getResultEntriesRequest } from "../../../features/analysis/resultEntryApi";
 import ResultEntriesTable from "../../../components/analysis/ResultEntriesTable";
 import { Button } from "../../../components/ui/button";
@@ -43,9 +42,11 @@ function ResultSetDetailPage() {
 	useEffect(() => {
 		const loadResultSet = async () => {
 			try {
-				const data = await getResultSetByIdRequest(id, token);
-				setResultSet(data.resultSet);
-				await loadResultEntries();
+				const resultSetResponse = await getResultSetByIdRequest(id, token);
+				setResultSet(resultSetResponse.resultSet);
+
+				const entriesResponse = await getResultEntriesRequest(id, token);
+				setEntries(entriesResponse.entries || []);
 			} catch (err) {
 				setError(err.response?.data?.error || "Failed to load result set.");
 			} finally {
@@ -170,8 +171,6 @@ function ResultSetDetailPage() {
               )}
             </CardContent>
           </Card>
-					
-
 
 					<ResultEntriesTable
 						entries={entries}

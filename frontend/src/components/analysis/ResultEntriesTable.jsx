@@ -31,7 +31,6 @@ function ResultEntriesTable({ entries, isLinkedExperiment }) {
                   )}
 
                   <th className="px-3 py-3 text-left font-medium">Sex</th>
-                  <th className="px-3 py-3 text-left font-medium">Notes</th>
                 </tr>
               </thead>
 
@@ -63,7 +62,6 @@ function ResultEntriesTable({ entries, isLinkedExperiment }) {
                     )}
 
                     <td className="px-3 py-3 align-top">{entry.sex || "—"}</td>
-                    <td className="px-3 py-3 align-top">{entry.notes || "—"}</td>
                   </tr>
                 ))}
               </tbody>

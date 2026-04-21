@@ -24,6 +24,15 @@ const createEmptyRow = () => ({
   timepointValue: "",
 });
 
+// Sets character counts for text box fields with max count
+function CharacterCount({ current, max }) {
+	return (
+		<p className="text-xs text-slate-500">
+			{current ?? 0}/{max}
+		</p>
+	);
+}
+
 // Displays and adds result entries for one result set in batch-table format
 function ResultEntriesSection({ resultSetId, experimentId }) {
   const { token } = useAuth();
@@ -449,88 +458,9 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
                 Clear batch
               </Button>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="generalNotes">
-                General notes for this batch (optional)
-              </Label>
-              <textarea
-                id="generalNotes"
-                value={generalNotes}
-                onChange={(event) => setGeneralNotes(event.target.value)}
-                className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-                placeholder="Add optional notes that apply to all rows in this batch"
-              />
-            </div>
           </form>
         )}
 
-        <div className="space-y-3">
-          {loading && (
-            <p className="text-sm text-slate-500">Loading result entries...</p>
-          )}
-
-          {!loading && entries.length === 0 && (
-            <p className="text-sm text-slate-500">No result entries added yet.</p>
-          )}
-
-          {entries.map((entry) => (
-            <div
-              key={entry.id}
-              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-            >
-              <p className="font-medium text-slate-900">
-                Numeric value: {entry.numericValue}
-              </p>
-
-              {entry.subject && (
-                <p className="text-sm text-slate-600">
-                  Subject: {entry.subject.subjectCode}
-                </p>
-              )}
-
-              {entry.group && (
-                <p className="text-sm text-slate-600">
-                  Group: {entry.group.name} — {entry.group.groupType}
-                </p>
-              )}
-
-              {entry.sampleCode && (
-                <p className="text-sm text-slate-600">
-                  Sample code: {entry.sampleCode}
-                </p>
-              )}
-
-              {entry.groupLabel && (
-                <p className="text-sm text-slate-600">
-                  Group label: {entry.groupLabel}
-                </p>
-              )}
-
-              {entry.sex && (
-                <p className="text-sm text-slate-600">Sex: {entry.sex}</p>
-              )}
-
-              {entry.timepointValue !== null &&
-                entry.timepointValue !== undefined && (
-                  <p className="text-sm text-slate-600">
-                    Timepoint: {entry.timepointValue} {entry.timepointUnit || ""}
-                  </p>
-                )}
-
-              {entry.eventOccurred !== null &&
-                entry.eventOccurred !== undefined && (
-                  <p className="text-sm text-slate-600">
-                    Event occurred: {entry.eventOccurred}
-                  </p>
-                )}
-
-              {entry.notes && (
-                <p className="mt-2 text-sm text-slate-600">{entry.notes}</p>
-              )}
-            </div>
-          ))}
-        </div>
       </CardContent>
     </Card>
   );

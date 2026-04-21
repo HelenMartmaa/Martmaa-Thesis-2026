@@ -330,20 +330,6 @@ function ResultEntriesEditorSection({
             Clear batch
           </Button>
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="generalNotes">
-            General notes for this batch (optional)
-          </Label>
-
-          <textarea
-            id="generalNotes"
-            value={generalNotes}
-            onChange={(event) => setGeneralNotes(event.target.value)}
-            className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            placeholder="Add optional notes that apply to all rows in this batch"
-          />
-        </div>
       </CardContent>
     </Card>
   );

@@ -26,4 +26,38 @@ const createResultEntryRequest = async (resultSetId, data, token) => {
   return response.data;
 };
 
-export { getResultEntriesRequest, createResultEntryRequest };
+// Updates one entry
+const updateResultEntryRequest = async (resultSetId, entryId, data, token) => {
+  const response = await apiClient.put(
+    `/result-sets/${resultSetId}/entries/${entryId}`,
+    data,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+// Deletes one entry
+const deleteResultEntryRequest = async (resultSetId, entryId, token) => {
+  const response = await apiClient.delete(
+    `/result-sets/${resultSetId}/entries/${entryId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export {
+  getResultEntriesRequest,
+  createResultEntryRequest,
+  updateResultEntryRequest,
+  deleteResultEntryRequest
+};

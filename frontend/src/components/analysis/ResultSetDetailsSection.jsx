@@ -11,6 +11,15 @@ function FieldRequirement({ required }) {
   );
 }
 
+// Sets character counts for text box fields with max count
+function CharacterCount({ current, max }) {
+	return (
+		<p className="text-xs text-slate-500">
+			{current ?? 0}/{max}
+		</p>
+	);
+}
+
 // Controlled section for entering result set details
 function ResultSetDetailsSection({
   formData,
@@ -88,7 +97,7 @@ function ResultSetDetailsSection({
                     onChange={handleChange}
                     required
                   />
-                  in vivo
+                  <i>in vivo</i>
                 </label>
 
                 <label className="flex items-center gap-2 text-sm text-slate-700">
@@ -100,7 +109,7 @@ function ResultSetDetailsSection({
                     onChange={handleChange}
                     required
                   />
-                  in vitro
+                  <i>in vitro</i>
                 </label>
               </div>
             </div>
@@ -144,9 +153,11 @@ function ResultSetDetailsSection({
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+								maxLength={500}
                 className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                 placeholder="Add general notes about this result set"
               />
+							<CharacterCount current={(formData.description|| "").length} max={500} />
             </div>
           </>
         )}
