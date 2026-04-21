@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import useAuth from "../../features/auth/useAuth";
-import {
-  getExperimentGroupsRequest,
-  getExperimentSubjectsRequest,
-} from "../../features/planning/planningApi";
+import { getExperimentGroupsRequest, getExperimentSubjectsRequest } from "../../features/planning/planningApi";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -16,6 +13,8 @@ function ResultEntriesEditorSection({
   setRows,
   generalNotes,
   setGeneralNotes,
+  isSurvivalAnalysis,
+  setIsSurvivalAnalysis,
 }) {
   const { token } = useAuth();
 
@@ -31,6 +30,8 @@ function ResultEntriesEditorSection({
     groupLabel: "",
     sex: "",
     numericValue: "",
+    timepointValue: "",
+    eventOccurred: false,
   });
 
   const loadRelatedExperimentData = async () => {
@@ -124,38 +125,52 @@ function ResultEntriesEditorSection({
     );
   };
 
-  // Strong numeric input sanitizer
   const handleNumericValueChange = (index, rawValue) => {
     let value = rawValue;
 
-    // Normalize different dash symbols
     value = value.replace(/[−–—]/g, "-");
-
-    // Check if minus is first character
     const shouldBeNegative = value.startsWith("-");
-
-    // Remove everything except digits and dots
     value = value.replace(/[^0-9.]/g, "");
 
-    // Keep only first decimal point
     const parts = value.split(".");
     value =
       parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
 
-    // Add minus only to beginning
     if (shouldBeNegative) {
       value = "-" + value;
     }
 
-    // Prevent "-."
     if (value === "-.") {
       value = "-";
     }
 
-    // Hard max length
     value = value.slice(0, 12);
 
     updateRow(index, "numericValue", value);
+  };
+
+  const handleTimepointValueChange = (index, rawValue) => {
+    let value = rawValue;
+
+    value = value.replace(/[−–—]/g, "-");
+    const shouldBeNegative = value.startsWith("-");
+    value = value.replace(/[^0-9.]/g, "");
+
+    const parts = value.split(".");
+    value =
+      parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
+
+    if (shouldBeNegative) {
+      value = "-" + value;
+    }
+
+    if (value === "-.") {
+      value = "-";
+    }
+
+    value = value.slice(0, 12);
+
+    updateRow(index, "timepointValue", value);
   };
 
   return (
@@ -167,11 +182,26 @@ function ResultEntriesEditorSection({
       <CardContent className="space-y-6">
         <div className="space-y-3">
           <p className="text-s text-slate-500">
-            Please use period/dot for decimal numbers. Only "Value" cell values
-            are required ones, other values are optional.
+            Please use period/dot for decimal numbers. Only the primary analysis
+            value field is required, other values are optional.
             <br />
             Statistical analysis can be conducted with saved datasets and entries
             in the "Saved Analysis Datasets" page.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+            <input
+              type="checkbox"
+              checked={isSurvivalAnalysis}
+              onChange={(event) => setIsSurvivalAnalysis(event.target.checked)}
+            />
+            Survival/event analysis
+          </label>
+          <p className="text-xs text-slate-500">
+            Enable this if the table should collect Kaplan-Meier style survival
+            data instead of standard numeric values.
           </p>
         </div>
 
@@ -179,7 +209,18 @@ function ResultEntriesEditorSection({
           <table className="min-w-full text-sm">
             <thead className="bg-slate-100 text-slate-700">
               <tr>
-                <th className="px-3 py-3 text-left font-medium">Value</th>
+                {isSurvivalAnalysis ? (
+                  <>
+                    <th className="px-3 py-3 text-left font-medium">
+                      Event occurred
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium">
+                      Timepoint value
+                    </th>
+                  </>
+                ) : (
+                  <th className="px-3 py-3 text-left font-medium">Value</th>
+                )}
 
                 {isLinkedExperiment ? (
                   <>
@@ -188,8 +229,12 @@ function ResultEntriesEditorSection({
                   </>
                 ) : (
                   <>
-                    <th className="px-3 py-3 text-left font-medium">Sample code</th>
-                    <th className="px-3 py-3 text-left font-medium">Group label</th>
+                    <th className="px-3 py-3 text-left font-medium">
+                      Sample code
+                    </th>
+                    <th className="px-3 py-3 text-left font-medium">
+                      Group label
+                    </th>
                   </>
                 )}
 
@@ -201,17 +246,45 @@ function ResultEntriesEditorSection({
             <tbody className="divide-y divide-slate-200 bg-white">
               {rows.map((row, index) => (
                 <tr key={index}>
-                  <td className="px-3 py-3 align-top">
-                    <Input
-                      type="text"
-                      inputMode="decimal"
-                      value={row.numericValue}
-                      onChange={(event) =>
-                        handleNumericValueChange(index, event.target.value)
-                      }
-                      placeholder="Enter value"
-                    />
-                  </td>
+                  {isSurvivalAnalysis ? (
+                    <>
+                      <td className="px-3 py-3 align-top">
+                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            checked={Boolean(row.eventOccurred)}
+                            onChange={(event) =>
+                              updateRow(index, "eventOccurred", event.target.checked)
+                            }
+                          />
+                        </label>
+                      </td>
+
+                      <td className="px-3 py-3 align-top">
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={row.timepointValue}
+                          onChange={(event) =>
+                            handleTimepointValueChange(index, event.target.value)
+                          }
+                          placeholder="Enter timepoint"
+                        />
+                      </td>
+                    </>
+                  ) : (
+                    <td className="px-3 py-3 align-top">
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={row.numericValue}
+                        onChange={(event) =>
+                          handleNumericValueChange(index, event.target.value)
+                        }
+                        placeholder="Enter value"
+                      />
+                    </td>
+                  )}
 
                   {isLinkedExperiment ? (
                     <>
@@ -330,6 +403,7 @@ function ResultEntriesEditorSection({
             Clear batch
           </Button>
         </div>
+
       </CardContent>
     </Card>
   );

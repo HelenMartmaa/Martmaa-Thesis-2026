@@ -22,12 +22,12 @@ function ResultSetSummaryCard({ formData, selectedExperimentTitle }) {
 
         <p>
           <span className="font-medium text-slate-900">Linked experiment:</span>{" "}
-          {selectedExperimentTitle || "None"}
+          {selectedExperimentTitle || "-"}
         </p>
 
         <p>
           <span className="font-medium text-slate-900">Experiment type:</span>{" "}
-          {formatExperimentType(formData.experimentType)}
+          <i>{formatExperimentType(formData.experimentType)}</i>
         </p>
 
         <p>

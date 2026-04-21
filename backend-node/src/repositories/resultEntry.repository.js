@@ -12,7 +12,6 @@ const createResultEntry = async ({
   timepointUnit,
   numericValue,
   eventOccurred,
-  notes,
 }) => {
   return prisma.resultEntry.create({
     data: {
@@ -26,7 +25,6 @@ const createResultEntry = async ({
       timepointUnit,
       numericValue,
       eventOccurred,
-      notes,
     },
     include: {
       subject: true,
@@ -70,7 +68,6 @@ const updateResultEntryById = async ({
   timepointUnit,
   numericValue,
   eventOccurred,
-  notes,
 }) => {
   return prisma.resultEntry.update({
     where: { id: entryId },
@@ -84,7 +81,6 @@ const updateResultEntryById = async ({
       timepointUnit,
       numericValue,
       eventOccurred,
-      notes,
     },
     include: {
       subject: true,

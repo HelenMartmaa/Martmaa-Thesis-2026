@@ -104,7 +104,7 @@ function ResultSetDetailPage() {
           Result Set Details
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Review, update or delete the main details of a saved result set.
+          Review, update or delete the saved result set.
         </p>
       </div>
 

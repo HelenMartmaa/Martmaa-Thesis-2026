@@ -2,6 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 // Displays saved result entries in a compact table
 function ResultEntriesTable({ entries, isLinkedExperiment }) {
+  const isSurvivalAnalysis = entries.some(
+    (entry) =>
+      (entry.timepointValue !== null && entry.timpointValue !==undefined) ||
+      entry.eventOccurred === 0 ||
+      entry.eventOccurred === 1
+  );
+
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader>
@@ -16,7 +23,18 @@ function ResultEntriesTable({ entries, isLinkedExperiment }) {
             <table className="min-w-full text-sm">
               <thead className="bg-slate-100 text-slate-700">
                 <tr>
-                  <th className="px-3 py-3 text-left font-medium">Value</th>
+                  {isSurvivalAnalysis ? (
+                    <>
+                      <th className="px-3 py-3 text-left font-medium">
+                        Event occurred
+                      </th>
+                      <th className="px-3 py-3 text-left font-medium">
+                        Timepoint value
+                      </th>
+                    </>
+                  ) : (
+                    <th className="px-3 py-3 text-left font-medium">Value</th>
+                  )}
 
                   {isLinkedExperiment ? (
                     <>
@@ -25,8 +43,12 @@ function ResultEntriesTable({ entries, isLinkedExperiment }) {
                     </>
                   ) : (
                     <>
-                      <th className="px-3 py-3 text-left font-medium">Sample code</th>
-                      <th className="px-3 py-3 text-left font-medium">Group label</th>
+                      <th className="px-3 py-3 text-left font-medium">
+                        Sample code
+                      </th>
+                      <th className="px-3 py-3 text-left font-medium">
+                        Group label
+                      </th>
                     </>
                   )}
 
@@ -37,7 +59,37 @@ function ResultEntriesTable({ entries, isLinkedExperiment }) {
               <tbody className="divide-y divide-slate-200 bg-white">
                 {entries.map((entry) => (
                   <tr key={entry.id}>
-                    <td className="px-3 py-3 align-top">{entry.numericValue}</td>
+                    {isSurvivalAnalysis ? (
+                      <>
+                        <td className="px-3 py-3 align-top">
+                          {entry.eventOccurred === 1 ? (
+                            <span
+                              className="inline-flex items-center rounded-full px-2 py-1 bg-emerald-200 text-m font-medium text-emerald-700"
+                              aria-label="Event occurred"
+                            >
+                              ✔
+                            </span>
+                          ) : entry.eventOccurred === 0 ? (
+                            <span
+                              className="inline-flex items-center rounded-full px-2 py-1 bg-red-200 text-m font-medium text-red-700"
+                              aria-label="Event did not occur"
+                            >
+                              ✘
+                            </span>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </td>
+
+                        <td className="px-3 py-3 align-top">
+                          {entry.timepointValue ?? "—"}
+                        </td>
+                      </>
+                    ) : (
+                      <td className="px-3 py-3 align-top">
+                        {entry.numericValue ?? "—"}
+                      </td>
+                    )}
 
                     {isLinkedExperiment ? (
                       <>

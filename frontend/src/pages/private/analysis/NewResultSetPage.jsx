@@ -16,6 +16,8 @@ const createEmptyRow = () => ({
   groupLabel: "",
   sex: "",
   numericValue: "",
+  timepointValue: "",
+  eventOccurred: false,
 });
 
 // Combined page for creating a result set together with its entries
@@ -39,6 +41,7 @@ function NewResultSetPage() {
 
   const [rows, setRows] = useState([createEmptyRow()]);
   const [generalNotes, setGeneralNotes] = useState("");
+  const [isSurvivalAnalysis, setIsSurvivalAnalysis] = useState(false);
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -101,6 +104,7 @@ function NewResultSetPage() {
 
     setRows([createEmptyRow()]);
     setGeneralNotes("");
+    setIsSurvivalAnalysis(false);
     setError("");
     setSuccessMessage("");
   };
@@ -123,15 +127,29 @@ function NewResultSetPage() {
     }
 
     for (const row of rows) {
-      if (row.numericValue === "" || row.numericValue === null) {
-        return "Each row must contain a numeric value.";
-      }
+      if (isSurvivalAnalysis) {
+        if (row.timepointValue === "" || row.timepointValue === null) {
+          return "Each survival entry must contain a timepoint value.";
+        }
 
-      const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
-      const parsedValue = Number(normalizedValue);
+        const parsedTimepoint = Number(
+          String(row.timepointValue).replace(/[−–—]/g, "-")
+        );
 
-      if (!Number.isFinite(parsedValue)) {
-        return "Each row must contain a valid numeric value.";
+        if (!Number.isFinite(parsedTimepoint)) {
+          return "Each survival entry must contain a valid timepoint value.";
+        }
+      } else {
+        if (row.numericValue === "" || row.numericValue === null) {
+          return "Each row must contain a numeric value.";
+        }
+
+        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
+        const parsedValue = Number(normalizedValue);
+
+        if (!Number.isFinite(parsedValue)) {
+          return "Each row must contain a valid numeric value.";
+        }
       }
     }
 
@@ -156,19 +174,26 @@ function NewResultSetPage() {
       const createdSet = resultSetResponse.resultSet;
 
       for (const row of rows) {
-        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
-
         const payload = {
           subjectId: formData.experimentId ? row.subjectId || null : null,
           groupId: formData.experimentId ? row.groupId || null : null,
           sampleCode: !formData.experimentId ? row.sampleCode || null : null,
           groupLabel: !formData.experimentId ? row.groupLabel || null : null,
           sex: row.sex || null,
-          timepointValue: null,
-          timepointUnit: null,
-          numericValue: Number(normalizedValue),
-          eventOccurred: null,
-          notes: generalNotes || null,
+          timepointValue: isSurvivalAnalysis
+            ? Number(String(row.timepointValue).replace(/[−–—]/g, "-"))
+            : null,
+          timepointUnit: isSurvivalAnalysis
+            ? formData.measurementUnit || null
+            : null,
+          numericValue: isSurvivalAnalysis
+            ? null
+            : Number(String(row.numericValue).replace(/[−–—]/g, "-")),
+          eventOccurred: isSurvivalAnalysis
+            ? row.eventOccurred
+              ? 1
+              : 0
+            : null,
         };
 
         await createResultEntryRequest(createdSet.id, payload, token);
@@ -236,6 +261,8 @@ function NewResultSetPage() {
         setRows={setRows}
         generalNotes={generalNotes}
         setGeneralNotes={setGeneralNotes}
+        isSurvivalAnalysis={isSurvivalAnalysis}
+        setIsSurvivalAnalysis={setIsSurvivalAnalysis}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row">

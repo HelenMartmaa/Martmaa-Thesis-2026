@@ -2,9 +2,10 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
-import { authenticateToken } from "./middleware/auth.middleware.js"; // For testing middleware
+import { authenticateToken } from "./middleware/auth.middleware.js";
 import experimentRoutes from "./routes/experiment.routes.js";
 import resultSetRoutes from "./routes/resultSet.routes.js";
+import statisticalAnalysisRoutes from "./routes/statisticalAnalysis.routes.js";
 
 dotenv.config();
 
@@ -21,8 +22,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/experiments", experimentRoutes);
 app.use("/api/result-sets", resultSetRoutes);
+app.use("/api/statistical-analyses", statisticalAnalysisRoutes);
 
-/* For middleware testing;*/
+//Middleware
 app.get("/api/protected", authenticateToken, (req, res) => {
   res.json({
     message: "You have access to this protected route.",

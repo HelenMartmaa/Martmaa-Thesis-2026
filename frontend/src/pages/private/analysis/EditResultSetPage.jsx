@@ -25,6 +25,8 @@ const createEmptyRow = () => ({
   groupLabel: "",
   sex: "",
   numericValue: "",
+  timepointValue: "",
+  eventOccurred: false,
 });
 
 // Page for editing an existing result set together with its entries
@@ -53,13 +55,13 @@ function EditResultSetPage() {
 
   const [rows, setRows] = useState([createEmptyRow()]);
   const [generalNotes, setGeneralNotes] = useState("");
+  const [isSurvivalAnalysis, setIsSurvivalAnalysis] = useState(false);
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // For error message
   useEffect(() => {
     if (error && errorRef.current) {
       errorRef.current.scrollIntoView({
@@ -70,7 +72,6 @@ function EditResultSetPage() {
     }
   }, [error]);
 
-  // For success message
   useEffect(() => {
     if (successMessage && successRef.current) {
       successRef.current.scrollIntoView({
@@ -119,6 +120,15 @@ function EditResultSetPage() {
 
         setOriginalEntryIds(loadedEntries.map((entry) => entry.id));
 
+        const detectedSurvivalAnalysis = loadedEntries.some(
+          (entry) =>
+            (entry.timepointValue !== null && entry.timepointValue !== undefined) ||
+            entry.eventOccurred === 0 ||
+            entry.eventOccurred === 1
+        );
+
+        setIsSurvivalAnalysis(detectedSurvivalAnalysis);
+
         if (loadedEntries.length > 0) {
           setRows(
             loadedEntries.map((entry) => ({
@@ -132,15 +142,18 @@ function EditResultSetPage() {
                 entry.numericValue !== null && entry.numericValue !== undefined
                   ? String(entry.numericValue)
                   : "",
+              timepointValue:
+                entry.timepointValue !== null && entry.timepointValue !== undefined
+                  ? String(entry.timepointValue)
+                  : "",
+              eventOccurred: entry.eventOccurred === 1,
             }))
           );
-
-          const firstEntryWithNotes = loadedEntries.find((entry) => entry.notes);
-          setGeneralNotes(firstEntryWithNotes?.notes || "");
         } else {
           setRows([createEmptyRow()]);
-          setGeneralNotes("");
         }
+
+        setGeneralNotes("");
       } catch (err) {
         setError(err.response?.data?.error || "Failed to load result set.");
       } finally {
@@ -177,15 +190,29 @@ function EditResultSetPage() {
     }
 
     for (const row of rows) {
-      if (row.numericValue === "" || row.numericValue === null) {
-        return "Each row must contain a numeric value.";
-      }
+      if (isSurvivalAnalysis) {
+        if (row.timepointValue === "" || row.timepointValue === null) {
+          return "Each survival entry must contain a timepoint value.";
+        }
 
-      const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
-      const parsedValue = Number(normalizedValue);
+        const parsedTimepoint = Number(
+          String(row.timepointValue).replace(/[−–—]/g, "-")
+        );
 
-      if (!Number.isFinite(parsedValue)) {
-        return "Each row must contain a valid numeric value.";
+        if (!Number.isFinite(parsedTimepoint)) {
+          return "Each survival entry must contain a valid timepoint value.";
+        }
+      } else {
+        if (row.numericValue === "" || row.numericValue === null) {
+          return "Each row must contain a numeric value.";
+        }
+
+        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
+        const parsedValue = Number(normalizedValue);
+
+        if (!Number.isFinite(parsedValue)) {
+          return "Each row must contain a valid numeric value.";
+        }
       }
     }
 
@@ -206,10 +233,8 @@ function EditResultSetPage() {
     try {
       setIsSubmitting(true);
 
-      // 1. Update the result set main information
       await updateResultSetRequest(id, formData, token);
 
-      // 2. Determine which entries were removed in the editor
       const currentExistingIds = rows
         .filter((row) => row.id)
         .map((row) => row.id);
@@ -218,26 +243,27 @@ function EditResultSetPage() {
         (entryId) => !currentExistingIds.includes(entryId)
       );
 
-      // 3. Delete removed entries
       for (const entryId of deletedEntryIds) {
         await deleteResultEntryRequest(id, entryId, token);
       }
 
-      // 4. Update existing entries and create new ones
       for (const row of rows) {
-        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
-
         const payload = {
           subjectId: formData.experimentId ? row.subjectId || null : null,
           groupId: formData.experimentId ? row.groupId || null : null,
           sampleCode: !formData.experimentId ? row.sampleCode || null : null,
           groupLabel: !formData.experimentId ? row.groupLabel || null : null,
           sex: row.sex || null,
-          timepointValue: null,
-          timepointUnit: null,
-          numericValue: Number(normalizedValue),
-          eventOccurred: null,
-          notes: generalNotes || null,
+          timepointValue: isSurvivalAnalysis
+            ? Number(String(row.timepointValue).replace(/[−–—]/g, "-"))
+            : null,
+          timepointUnit: isSurvivalAnalysis
+            ? formData.measurementUnit || null
+            : null,
+          numericValue: isSurvivalAnalysis
+            ? null
+            : Number(String(row.numericValue).replace(/[−–—]/g, "-")),
+          eventOccurred: isSurvivalAnalysis ? (row.eventOccurred ? 1 : 0) : null,
         };
 
         if (row.id) {
@@ -249,11 +275,19 @@ function EditResultSetPage() {
 
       setSuccessMessage("Result set and entries were updated successfully.");
 
-      // Refresh entry ids after a successful save so delete tracking stays correct
       const refreshedEntriesResponse = await getResultEntriesRequest(id, token);
       const refreshedEntries = refreshedEntriesResponse.entries || [];
 
       setOriginalEntryIds(refreshedEntries.map((entry) => entry.id));
+
+      const detectedSurvivalAnalysis = refreshedEntries.some(
+        (entry) =>
+          (entry.timepointValue !== null && entry.timepointValue !== undefined) ||
+          entry.eventOccurred === 0 ||
+          entry.eventOccurred === 1
+      );
+
+      setIsSurvivalAnalysis(detectedSurvivalAnalysis);
 
       if (refreshedEntries.length > 0) {
         setRows(
@@ -268,6 +302,11 @@ function EditResultSetPage() {
               entry.numericValue !== null && entry.numericValue !== undefined
                 ? String(entry.numericValue)
                 : "",
+            timepointValue:
+              entry.timepointValue !== null && entry.timepointValue !== undefined
+                ? String(entry.timepointValue)
+                : "",
+            eventOccurred: entry.eventOccurred === 1,
           }))
         );
       } else {
@@ -345,6 +384,8 @@ function EditResultSetPage() {
             setRows={setRows}
             generalNotes={generalNotes}
             setGeneralNotes={setGeneralNotes}
+            isSurvivalAnalysis={isSurvivalAnalysis}
+            setIsSurvivalAnalysis={setIsSurvivalAnalysis}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row">

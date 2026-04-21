@@ -17,8 +17,9 @@ model User {
   passwordHash String   @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  experiments Experiment[]
-  resultSets  ResultSet[]
+  experiments         Experiment[]
+  resultSets          ResultSet[]
+  statisticalAnalyses StatisticalAnalysis[]
 
   @@map("users")
 }
@@ -129,13 +130,15 @@ model ResultSet {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
 
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  experiment Experiment?   @relation(fields: [experimentId], references: [id], onDelete: SetNull)
-  entries    ResultEntry[]
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  experiment          Experiment?           @relation(fields: [experimentId], references: [id], onDelete: SetNull)
+  entries             ResultEntry[]
+  statisticalAnalyses StatisticalAnalysis[]
 
   @@map("result_sets")
 }
 
+// Tabel for adding numerical research results data
 model ResultEntry {
   id             Int     @id @default(autoincrement())
   resultSetId    Int     @map("result_set_id")
@@ -146,13 +149,32 @@ model ResultEntry {
   sex            String? @db.VarChar(20)
   timepointValue Float?  @map("timepoint_value")
   timepointUnit  String? @map("timepoint_unit") @db.VarChar(20)
-  numericValue   Float   @map("numeric_value")
+  numericValue   Float?  @map("numeric_value")
   eventOccurred  Int?    @map("event_occurred")
-  notes          String?
 
   resultSet ResultSet          @relation(fields: [resultSetId], references: [id], onDelete: Cascade)
   subject   ExperimentSubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
   group     ExperimentGroup?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@map("result_entries")
+}
+
+// Statistical analysis table
+model StatisticalAnalysis {
+  id                  Int      @id @default(autoincrement())
+  userId              Int      @map("user_id")
+  resultSetId         Int      @map("result_set_id")
+  analysisName        String   @map("analysis_name") @db.VarChar(255)
+  groupingMode        String?  @map("grouping_mode") @db.VarChar(50)
+  selectedMetricsJson String?  @map("selected_metrics_json")
+  selectedTestsJson   String?  @map("selected_tests_json")
+  filtersJson         String?  @map("filters_json")
+  resultsJson         String?  @map("results_json")
+  chartConfigJson     String?  @map("chart_config_json")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resultSet ResultSet @relation(fields: [resultSetId], references: [id], onDelete: Cascade)
+
+  @@map("statistical_analyses")
 }
