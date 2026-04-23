@@ -232,6 +232,12 @@ function ResultSetDetailPage() {
             >
               Delete Result Set
             </Button>
+
+						<Button asChild className="border-emerald-200 bg-emerald-100 text-slate-900">
+							<Link to={`/analysis/result-sets/${id}/run-analysis`}>
+								Run Statistical Analysis
+							</Link>
+						</Button>
           </div>
         </div>
       )}

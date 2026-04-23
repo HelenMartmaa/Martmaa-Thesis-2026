@@ -11,6 +11,9 @@ import NewResultSetPage from "../pages/private/analysis/NewResultSetPage";
 import SavedResultSetsPage from "../pages/private/analysis/SavedResultSetsPage";
 import ResultSetDetailPage from "../pages/private/analysis/ResultSetDetailPage";
 import EditResultSetPage from "../pages/private/analysis/EditResultSetPage";
+import NewStatisticalAnalysisPage from "../pages/private/analysis/NewStatisticalAnalysisPage";
+import SavedStatisticalAnalysesPage from "../pages/private/analysis/SavedStatisticalAnalysesPage";
+import StatisticalAnalysisDetailPage from "../pages/private/analysis/StatisticalAnalysisDetailPage";
 
 import PrivateLayout from "../layouts/PrivateLayout";
 /* import useAuth from "../features/auth/useAuth"; */
@@ -39,10 +42,12 @@ function AppRouter() {
 					<Route path="/analysis/saved" element={<SavedResultSetsPage />} />
 					<Route path="/analysis/result-sets/:id" element={<ResultSetDetailPage />} />
 					<Route path="/analysis/result-sets/:id/edit" element={<EditResultSetPage />} />
-
+					<Route path="/analysis/result-sets/:resultSetId/run-analysis" element={<NewStatisticalAnalysisPage />} />
+					<Route path="/analysis/statistical-analyses" element={<SavedStatisticalAnalysesPage />} />
+					<Route path="/analysis/statistical-analyses/:id" element={<StatisticalAnalysisDetailPage />} />
 				</Route>	
 
-				<Route
+{/* 				<Route
 					path="/analysis/new"
 					element={
 						<ProtectedRoute>
@@ -58,7 +63,7 @@ function AppRouter() {
 							<PlaceholderPage title="Saved Analysis Datasets" />
 						</ProtectedRoute>
 					}
-				/>
+				/> */}
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

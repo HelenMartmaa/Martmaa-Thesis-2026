@@ -62,7 +62,7 @@ function DashboardHeader() {
 
           <div className="group relative">
             <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-m font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
-              Analysis
+              Results
               <span className="text-xs text-slate-500">⮟</span>
             </button>
 
@@ -71,13 +71,35 @@ function DashboardHeader() {
                 to="/analysis/new"
                 className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
               >
-                New Analysis Dataset
+                New Result Dataset
               </Link>
               <Link
                 to="/analysis/saved"
                 className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
               >
-                Saved Analysis Datasets
+                Saved Result Datasets
+              </Link>
+            </div>
+          </div>
+
+          <div className="group relative">
+            <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-m font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
+              Statistical Analysis
+              <span className="text-xs text-slate-500">⮟</span>
+            </button>
+
+            <div className="invisible absolute left-0 top-full z-20 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100">
+              <Link
+                to="/analysis/new"
+                className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                New Statistical Analysis
+              </Link>
+              <Link
+                to="/analysis/statistical-analyses"
+                className="block rounded-lg px-3 py-2 text-sm text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+              >
+                Saved Statistical Analyses
               </Link>
             </div>
           </div>
@@ -117,19 +139,37 @@ function DashboardHeader() {
             </div>
 
             <div>
-              <p className="mb-2 text-sm font-semibold text-slate-900">Analysis</p>
+              <p className="mb-2 text-sm font-semibold text-slate-900">Results</p>
               <div className="space-y-1">
                 <Link
                   to="/analysis/new"
                   className="block w-full rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition active:scale-[0.99] active:bg-slate-200 hover:bg-slate-100 focus:bg-slate-100"
                 >
-                  New Analysis
+                  New Result Dataset
+                </Link>
+                <Link
+                  to="/analysis/statistical-analyses"
+                  className="block w-full rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition active:scale-[0.99] active:bg-slate-200 hover:bg-slate-100 focus:bg-slate-100"
+                >
+                  Saved Result Datasets
+                </Link>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-sm font-semibold text-slate-900">Statistical Analysis</p>
+              <div className="space-y-1">
+                <Link
+                  to="/analysis/new"
+                  className="block w-full rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition active:scale-[0.99] active:bg-slate-200 hover:bg-slate-100 focus:bg-slate-100"
+                >
+                  New Statistical Analysis
                 </Link>
                 <Link
                   to="/analysis/saved"
                   className="block w-full rounded-xl px-3 py-2 text-sm font-medium text-slate-700 transition active:scale-[0.99] active:bg-slate-200 hover:bg-slate-100 focus:bg-slate-100"
                 >
-                  Saved Analyses
+                  Saved Statistical Analyses
                 </Link>
               </div>
             </div>
