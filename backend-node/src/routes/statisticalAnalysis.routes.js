@@ -1,10 +1,5 @@
 import express from "express";
-import {
-  createStatisticalAnalysisController,
-  getUserStatisticalAnalysesController,
-  getStatisticalAnalysisByIdController,
-  deleteStatisticalAnalysisController,
-} from "../controllers/statisticalAnalysis.controller.js";
+import { createStatisticalAnalysisController, getUserStatisticalAnalysesController, getStatisticalAnalysisByIdController, deleteStatisticalAnalysisController } from "../controllers/statisticalAnalysis.controller.js";
 import { authenticateToken } from "../middleware/auth.middleware.js";
 
 const router = express.Router();

@@ -1,12 +1,7 @@
-import {
-  createStatisticalAnalysis,
-  getStatisticalAnalysesByUserId,
-  getStatisticalAnalysisByIdAndUserId,
-  deleteStatisticalAnalysisById,
-} from "../repositories/statisticalAnalysis.repository.js";
+import { createStatisticalAnalysis, getStatisticalAnalysesByUserId, getStatisticalAnalysisByIdAndUserId, deleteStatisticalAnalysisById } from "../repositories/statisticalAnalysis.repository.js";
 import { getResultSetByIdAndUserId } from "../repositories/resultSet.repository.js";
 import { getResultEntriesByResultSetId } from "../repositories/resultEntry.repository.js";
-import { calculateDescriptiveMetrics } from "./statisticsCalculator.service.js";
+import { runPythonAnalysis } from "./pythonAnalysisClient.service.js";
 
 // Creates and saves a statistical analysis
 const createStatisticalAnalysisService = async ({
@@ -37,35 +32,37 @@ const createStatisticalAnalysisService = async ({
     throw new Error("This result set has no entries to analyze.");
   }
 
-  const numericValues = entries
-    .map((entry) => entry.numericValue)
-    .filter((value) => Number.isFinite(value));
-
-  if (!numericValues.length) {
-    throw new Error("No valid numeric values found in this result set.");
-  }
-
-  const descriptiveResults = calculateDescriptiveMetrics(
-    numericValues,
-    selectedMetrics || []
-  );
-
-  const results = {
-    entryCount: entries.length,
-    numericValueCount: numericValues.length,
-    descriptiveMetrics: descriptiveResults,
-    tests: {},
+	// Will be sent to Python statistics service
+  const payload = {
+    analysisName: analysisName?.trim() || "Untitled analysis",
+    groupingMode: groupingMode || null,
+    selectedMetrics: selectedMetrics || [],
+    selectedTests: selectedTests || [],
+    filters: filters || {},
+    chartConfig: chartConfig || {},
+    entries: entries.map((entry) => ({
+      numericValue: entry.numericValue,
+      timepointValue: entry.timepointValue,
+      eventOccurred: entry.eventOccurred,
+      sex: entry.sex,
+      subjectId: entry.subjectId,
+      groupId: entry.groupId,
+      sampleCode: entry.sampleCode,
+      groupLabel: entry.groupLabel,
+    })),
   };
+
+  const pythonResults = await runPythonAnalysis(payload);
 
   return createStatisticalAnalysis({
     userId,
     resultSetId: parsedResultSetId,
-    analysisName: analysisName?.trim() || "Untitled analysis",
+    analysisName: payload.analysisName,
     groupingMode: groupingMode || null,
     selectedMetricsJson: JSON.stringify(selectedMetrics || []),
     selectedTestsJson: JSON.stringify(selectedTests || []),
     filtersJson: JSON.stringify(filters || {}),
-    resultsJson: JSON.stringify(results),
+    resultsJson: JSON.stringify(pythonResults),
     chartConfigJson: JSON.stringify(chartConfig || {}),
   });
 };
@@ -110,5 +107,5 @@ export {
   createStatisticalAnalysisService,
   getUserStatisticalAnalysesService,
   getStatisticalAnalysisByIdService,
-  deleteStatisticalAnalysisService
+  deleteStatisticalAnalysisService,
 };

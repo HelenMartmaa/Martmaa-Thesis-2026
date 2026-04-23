@@ -1,11 +1,6 @@
-import {
-  createStatisticalAnalysisService,
-  getUserStatisticalAnalysesService,
-  getStatisticalAnalysisByIdService,
-  deleteStatisticalAnalysisService,
-} from "../services/statisticalAnalysis.service.js";
+import { createStatisticalAnalysisService, getUserStatisticalAnalysesService, getStatisticalAnalysisByIdService, deleteStatisticalAnalysisService } from "../services/statisticalAnalysis.service.js";
 
-// Handles request for creating a new statistical analysis
+// Handles request for creating a statistical analysis
 const createStatisticalAnalysisController = async (req, res) => {
   try {
     const analysis = await createStatisticalAnalysisService({
@@ -24,7 +19,7 @@ const createStatisticalAnalysisController = async (req, res) => {
   }
 };
 
-// Handles request for loading all statistical analyses
+// Handles request for loading user analyses
 const getUserStatisticalAnalysesController = async (req, res) => {
   try {
     const analyses = await getUserStatisticalAnalysesService(req.user.userId);
@@ -39,7 +34,7 @@ const getUserStatisticalAnalysesController = async (req, res) => {
   }
 };
 
-// Handles request for loading one statistical analysis
+// Handles request for loading one analysis
 const getStatisticalAnalysisByIdController = async (req, res) => {
   try {
     const analysis = await getStatisticalAnalysisByIdService(
@@ -57,7 +52,7 @@ const getStatisticalAnalysisByIdController = async (req, res) => {
   }
 };
 
-// Handles request for deleting one statistical analysis
+// Handles request for deleting one analysis
 const deleteStatisticalAnalysisController = async (req, res) => {
   try {
     await deleteStatisticalAnalysisService(req.params.id, req.user.userId);
@@ -72,9 +67,4 @@ const deleteStatisticalAnalysisController = async (req, res) => {
   }
 };
 
-export {
-  createStatisticalAnalysisController,
-  getUserStatisticalAnalysesController,
-  getStatisticalAnalysisByIdController,
-  deleteStatisticalAnalysisController
-};
+export { createStatisticalAnalysisController, getUserStatisticalAnalysesController, getStatisticalAnalysisByIdController, deleteStatisticalAnalysisController };

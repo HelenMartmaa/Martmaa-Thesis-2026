@@ -45,7 +45,7 @@ const getStatisticalAnalysesByUserId = async (userId) => {
   });
 };
 
-// Returns one saved statistical analysis
+// Returns one saved statistical analysis bt id and owner user
 const getStatisticalAnalysisByIdAndUserId = async (analysisId, userId) => {
   return prisma.statisticalAnalysis.findFirst({
     where: {
@@ -69,5 +69,5 @@ export {
   createStatisticalAnalysis,
   getStatisticalAnalysesByUserId,
   getStatisticalAnalysisByIdAndUserId,
-  deleteStatisticalAnalysisById
+  deleteStatisticalAnalysisById,
 };

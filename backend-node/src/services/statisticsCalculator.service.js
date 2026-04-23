@@ -1,3 +1,4 @@
+// This file won't be used as all statistical calculations come from Python service
 // Utility helpers for statistical calculations
 
 const getMean = (values) =>
