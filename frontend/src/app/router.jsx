@@ -42,6 +42,7 @@ function AppRouter() {
 					<Route path="/analysis/saved" element={<SavedResultSetsPage />} />
 					<Route path="/analysis/result-sets/:id" element={<ResultSetDetailPage />} />
 					<Route path="/analysis/result-sets/:id/edit" element={<EditResultSetPage />} />
+					<Route path="/analysis/statistical-analyses/new" element={<NewStatisticalAnalysisPage />}/>
 					<Route path="/analysis/result-sets/:resultSetId/run-analysis" element={<NewStatisticalAnalysisPage />} />
 					<Route path="/analysis/statistical-analyses" element={<SavedStatisticalAnalysesPage />} />
 					<Route path="/analysis/statistical-analyses/:id" element={<StatisticalAnalysisDetailPage />} />
