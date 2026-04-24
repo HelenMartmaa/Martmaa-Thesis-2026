@@ -70,11 +70,27 @@ function SavedResultSetsPage() {
               <CardHeader>
                 <CardTitle>{resultSet.title}</CardTitle>
                 <CardDescription>
-                  Linked experiment: {resultSet.experiment?.title || "None"}
+								<span
+										className={`inline-flex w-fit rounded-full px-3 py-1 text-s font-medium ${
+											resultSet.experimentId
+												? "bg-blue-100 text-blue-700"
+												: "bg-slate-100 text-slate-700"
+										}`}
+									>
+										{resultSet.experimentId ? "Linked experiment dataset" : "Standalone dataset"}
+									</span>
                 </CardDescription>
               </CardHeader>
 
               <CardContent className="space-y-3 text-sm text-slate-600">
+
+								{resultSet.experimentId && (
+                  <p>
+                    <span className="font-medium text-slate-900">Linked experiment:</span>{" "}
+                    {formatExperimentType(resultSet.experiment?.title)}
+                  </p>
+                )}
+
                 <p>
                   <span className="font-medium text-slate-900">Type:</span>{" "}
                   <i>{formatExperimentType(resultSet.experimentType)}</i>

@@ -44,6 +44,16 @@ const updateResultSetRequest = async (resultSetId, data, token) => {
   return response.data;
 };
 
+const getResultSetsRequest = async (token) => {
+  const response = await apiClient.get("/result-sets", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
 // Deletes one result set
 const deleteResultSetRequest = async (resultSetId, token) => {
   const response = await apiClient.delete(`/result-sets/${resultSetId}`, {
@@ -60,5 +70,6 @@ export {
   getSavedResultSetsRequest,
   getResultSetByIdRequest,
   updateResultSetRequest,
-  deleteResultSetRequest
+  deleteResultSetRequest,
+	getResultSetsRequest,
 };

@@ -30,6 +30,8 @@ function NewResultSetPage() {
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(true);
 
+	const [datasetSource, setDatasetSource] = useState("standalone");
+
   const [formData, setFormData] = useState({
     experimentId: "",
     title: "",
@@ -107,12 +109,17 @@ function NewResultSetPage() {
     setIsSurvivalAnalysis(false);
     setError("");
     setSuccessMessage("");
+		setDatasetSource("standalone");
   };
 
   const validateBeforeSave = () => {
     if (!formData.title.trim()) {
       return "Result set title is required.";
     }
+
+		if (datasetSource === "linked" && !formData.experimentId) {
+  		return "Please select a planned experiment or choose standalone dataset.";
+		}
 
     if (!formData.experimentType) {
       return "Experiment type is required.";
@@ -248,6 +255,8 @@ function NewResultSetPage() {
         setFormData={setFormData}
         experiments={experiments}
         loadingExperiments={loadingExperiments}
+				datasetSource={datasetSource}
+				setDatasetSource={setDatasetSource}
       />
 
       <ResultSetSummaryCard

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
-import { getResultSetByIdRequest } from "../../../features/analysis/resultSetApi";
+import { getResultSetByIdRequest, getResultSetsRequest } from "../../../features/analysis/resultSetApi";
 import { createStatisticalAnalysisRequest } from "../../../features/analysis/statisticalAnalysisApi";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
@@ -30,6 +30,10 @@ function NewStatisticalAnalysisPage() {
 
   const errorRef = useRef(null);
   const successRef = useRef(null);
+
+	const [analysisSource, setAnalysisSource] = useState("saved_single");
+	const [availableResultSets, setAvailableResultSets] = useState([]);
+	const [selectedResultSetId, setSelectedResultSetId] = useState(resultSetId || "");
 
   const [resultSet, setResultSet] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -65,25 +69,51 @@ function NewStatisticalAnalysisPage() {
     }
   }, [successMessage]);
 
-  useEffect(() => {
-    const loadResultSet = async () => {
-      try {
-        const data = await getResultSetByIdRequest(resultSetId, token);
-        setResultSet(data.resultSet);
+	useEffect(() => {
+		const loadInitialData = async () => {
+			try {
+				if (resultSetId) {
+					const data = await getResultSetByIdRequest(resultSetId, token);
+					setResultSet(data.resultSet);
+					setSelectedResultSetId(resultSetId);
 
-        setFormData((prev) => ({
-          ...prev,
-          analysisName: `${data.resultSet.title} analysis`,
-        }));
-      } catch (err) {
-        setError(err.response?.data?.error || "Failed to load result set.");
-      } finally {
-        setLoading(false);
-      }
-    };
+					setFormData((prev) => ({
+						...prev,
+						analysisName: `${data.resultSet.title} analysis`,
+					}));
+				} else {
+					const data = await getResultSetsRequest(token);
+					setAvailableResultSets(data.resultSets || data.result_sets || []);
+				}
+			} catch (err) {
+				setError(err.response?.data?.error || "Failed to load analysis data.");
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    loadResultSet();
-  }, [resultSetId, token]);
+		loadInitialData();
+	}, [resultSetId, token]);
+
+	useEffect(() => {
+		const loadSelectedResultSet = async () => {
+			if (!selectedResultSetId || resultSetId) return;
+
+			try {
+				const data = await getResultSetByIdRequest(selectedResultSetId, token);
+				setResultSet(data.resultSet);
+
+				setFormData((prev) => ({
+					...prev,
+					analysisName: prev.analysisName || `${data.resultSet.title} analysis`,
+				}));
+			} catch (err) {
+				setError(err.response?.data?.error || "Failed to load selected result set.");
+			}
+		};
+
+		loadSelectedResultSet();
+	}, [selectedResultSetId, resultSetId, token]);
 
   const toggleMetric = (metricValue) => {
     setFormData((prev) => ({
@@ -116,6 +146,14 @@ function NewStatisticalAnalysisPage() {
   }, [formData.selectedTests]);
 
   const validateBeforeSave = () => {
+		if (analysisSource !== "saved_single") {
+			return "This analysis source is not available yet. Please use one saved result dataset.";
+		}
+
+		if (!selectedResultSetId) {
+			return "Please select a result dataset.";
+		}
+
     if (!formData.analysisName.trim()) {
       return "Analysis name is required.";
     }
@@ -131,52 +169,50 @@ function NewStatisticalAnalysisPage() {
   };
 
   const handleRunAndSaveAnalysis = async () => {
-    setError("");
-    setSuccessMessage("");
+		setError("");
+		setSuccessMessage("");
 
-    const validationError = validateBeforeSave();
+		const validationError = validateBeforeSave();
 
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+		if (validationError) {
+			setError(validationError);
+			return;
+		}
 
-    try {
-      setIsSubmitting(true);
+		try {
+			setIsSubmitting(true);
 
-      const payload = {
-        resultSetId,
-        analysisName: formData.analysisName,
-        groupingMode: formData.groupingMode,
-        selectedMetrics: formData.selectedMetrics,
-        selectedTests: formData.selectedTests,
-        filters: {},
-        chartConfig: {},
-      };
+			const payload = {
+				resultSetId: selectedResultSetId,
+				analysisName: formData.analysisName,
+				groupingMode: formData.groupingMode,
+				selectedMetrics: formData.selectedMetrics,
+				selectedTests: formData.selectedTests,
+				filters: {},
+				chartConfig: {},
+			};
 
-      const response = await createStatisticalAnalysisRequest(payload, token);
+			const response = await createStatisticalAnalysisRequest(payload, token);
 
-      setSuccessMessage("Statistical analysis was created successfully.");
-
-      navigate(`/analysis/statistical-analyses/${response.analysis.id}`);
-    } catch (err) {
-      setError(
-        err.response?.data?.error ||
-          err.message ||
-          "Failed to create statistical analysis."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+			setSuccessMessage("Statistical analysis was created successfully.");
+			navigate(`/analysis/statistical-analyses/${response.analysis.id}`);
+		} catch (err) {
+			setError(
+				err.response?.data?.error ||
+					err.message ||
+					"Failed to create statistical analysis."
+			);
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
 
   return (
     <section className="space-y-8">
       <div>
         <Button asChild variant="outline">
-          <Link to={`/analysis/result-sets/${resultSetId}`}>
-            ⮜ Back to Result Set Details
-          </Link>
+          <Link to={`/analysis/saved/`}>
+            ⮜ Back To Result Datasets List</Link>
         </Button>
       </div>
 
@@ -189,7 +225,7 @@ function NewStatisticalAnalysisPage() {
         </p>
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Loading result set...</p>}
+      {loading && <p className="text-sm text-slate-500">Loading anaysis data...</p>}
 
       {error && (
         <div
@@ -210,6 +246,86 @@ function NewStatisticalAnalysisPage() {
           {successMessage}
         </div>
       )}
+
+			<Card className="rounded-3xl border-slate-200 shadow-sm">
+				<CardHeader>
+					<CardTitle>Analysis Source</CardTitle>
+				</CardHeader>
+
+				<CardContent className="space-y-6">
+					<div className="grid gap-3 md:grid-cols-3">
+						<button
+							type="button"
+							onClick={() => setAnalysisSource("saved_single")}
+							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
+								analysisSource === "saved_single"
+									? "border-slate-900 bg-slate-100 text-slate-900"
+									: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+							}`}
+						>
+							<span className="block font-medium">Use saved result dataset</span>
+							<span className="mt-1 block text-xs text-slate-500">
+								Run analysis on one existing dataset.
+							</span>
+						</button>
+
+						<button
+							type="button"
+							onClick={() => setAnalysisSource("compare_two")}
+							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
+								analysisSource === "compare_two"
+									? "border-slate-900 bg-slate-100 text-slate-900"
+									: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+							}`}
+						>
+							<span className="block font-medium">Compare two datasets</span>
+							<span className="mt-1 block text-xs text-slate-500">
+								Coming soon for t-test and Mann-Whitney U.
+							</span>
+						</button>
+
+						<button
+							type="button"
+							onClick={() => setAnalysisSource("standalone_now")}
+							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
+								analysisSource === "standalone_now"
+									? "border-slate-900 bg-slate-100 text-slate-900"
+									: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+							}`}
+						>
+							<span className="block font-medium">Enter standalone data now</span>
+							<span className="mt-1 block text-xs text-slate-500">
+								Coming soon as a quick analysis workflow.
+							</span>
+						</button>
+					</div>
+
+					{analysisSource === "saved_single" && !resultSetId && (
+						<div className="space-y-2">
+							<label
+								htmlFor="selectedResultSetId"
+								className="text-sm font-medium text-slate-700"
+							>
+								Result dataset
+							</label>
+
+							<select
+								id="selectedResultSetId"
+								value={selectedResultSetId}
+								onChange={(event) => setSelectedResultSetId(event.target.value)}
+								className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+							>
+								<option value="">Select result dataset</option>
+								{availableResultSets.map((item) => (
+									<option key={item.id} value={item.id}>
+										{item.title} — {item.measurementName}
+									</option>
+								))}
+							</select>
+						</div>
+					)}
+				</CardContent>
+			</Card>
 
       {!loading && !error && resultSet && (
         <>
@@ -370,7 +486,11 @@ function NewStatisticalAnalysisPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate(`/analysis/result-sets/${resultSetId}`)}
+              onClick={() =>
+								resultSetId
+									? navigate(`/analysis/result-sets/${resultSetId}`)
+									: navigate("/analysis/saved")
+							}
               disabled={isSubmitting}
             >
               Cancel

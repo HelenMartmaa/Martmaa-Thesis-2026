@@ -26,6 +26,8 @@ function ResultSetDetailsSection({
   setFormData,
   experiments,
   loadingExperiments,
+	datasetSource,
+	setDatasetSource,
 }) {
   const handleChange = (event) => {
     setFormData((prev) => ({
@@ -33,6 +35,17 @@ function ResultSetDetailsSection({
       [event.target.name]: event.target.value,
     }));
   };
+
+	const handleDatasetSourceChange = (source) => {
+		setDatasetSource(source);
+
+		if (source === "standalone") {
+			setFormData((prev) => ({
+				...prev,
+				experimentId: "",
+			}));
+		}
+	};
 
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
@@ -45,26 +58,65 @@ function ResultSetDetailsSection({
           <p className="text-sm text-slate-500">Loading experiments...</p>
         ) : (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="experimentId">
-                Linked experiment
-                <FieldRequirement required={false} />
-              </Label>
-              <select
-                id="experimentId"
-                name="experimentId"
-                value={formData.experimentId}
-                onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              >
-                <option value="">No linked experiment</option>
-                {experiments.map((experiment) => (
-                  <option key={experiment.id} value={experiment.id}>
-                    {experiment.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+						<div className="space-y-3">
+  						<Label>Dataset source:</Label>
+							<div className="grid gap-3 sm:grid-cols-2">
+								<button
+									type="button"
+									onClick={() => handleDatasetSourceChange("linked")}
+									className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
+										datasetSource === "linked"
+											? "border-slate-900 bg-slate-100 text-slate-900"
+											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+									}`}
+								>
+									<span className="block font-medium">Link to planned experiment</span>
+									<span className="mt-1 block text-xs text-slate-500">
+										Use subjects and groups from an existing planned experiment.
+									</span>
+								</button>
+
+								<button
+									type="button"
+									onClick={() => handleDatasetSourceChange("standalone")}
+									className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
+										datasetSource === "standalone"
+											? "border-slate-900 bg-slate-100 text-slate-900"
+											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+									}`}
+								>
+									<span className="block font-medium">Standalone dataset</span>
+									<span className="mt-1 block text-xs text-slate-500">
+										Enter values manually without linking them to planning data.
+									</span>
+								</button>
+							</div>
+						</div>
+
+						{datasetSource === "linked" && (
+							<div className="space-y-2">
+								<Label htmlFor="experimentId">Linked experiment (optional)</Label>
+
+								{loadingExperiments ? (
+									<p className="text-sm text-slate-500">Loading experiments...</p>
+								) : (
+									<select
+										id="experimentId"
+										name="experimentId"
+										value={formData.experimentId}
+										onChange={handleChange}
+										className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+									>
+										<option value="">No experiment selected</option>
+										{experiments.map((experiment) => (
+											<option key={experiment.id} value={experiment.id}>
+												{experiment.title}
+											</option>
+										))}
+									</select>
+								)}
+							</div>
+						)}
 
             <div className="space-y-2">
               <Label htmlFor="title">
