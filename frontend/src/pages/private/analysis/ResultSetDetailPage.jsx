@@ -101,10 +101,10 @@ function ResultSetDetailPage() {
 
       <div className="mb-8 space-y-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Result Set Details
+          Saved Result Dataset Details
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Review, update or delete the saved result set.
+          Review, update, delete an existing result dataset or run statistical analysis for it.
         </p>
       </div>
 

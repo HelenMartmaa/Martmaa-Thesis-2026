@@ -165,6 +165,14 @@ function NewStatisticalAnalysisPage() {
       return "Select at least one metric or test.";
     }
 
+		const selectedTwoGroupTests = formData.selectedTests.some((test) =>
+			["student_t_test", "mann_whitney_u"].includes(test)
+		);
+
+		if (selectedTwoGroupTests && formData.groupingMode === "none") {
+			return "Student’s t-test and Mann-Whitney U-test require grouping mode By group or By sex.";
+		}
+
     return "";
   };
 
@@ -195,7 +203,9 @@ function NewStatisticalAnalysisPage() {
 			const response = await createStatisticalAnalysisRequest(payload, token);
 
 			setSuccessMessage("Statistical analysis was created successfully.");
-			navigate(`/analysis/statistical-analyses/${response.analysis.id}`);
+			navigate(`/analysis/statistical-analyses/${response.analysis.id}`, {
+				state: { focusResults: true },
+			});
 		} catch (err) {
 			setError(
 				err.response?.data?.error ||
@@ -327,7 +337,7 @@ function NewStatisticalAnalysisPage() {
 				</CardContent>
 			</Card>
 
-      {!loading && !error && resultSet && (
+      {!loading && resultSet && (
         <>
           <Card className="rounded-3xl border-slate-200 shadow-sm">
             <CardHeader>
@@ -404,6 +414,11 @@ function NewStatisticalAnalysisPage() {
                   <option value="group">By group</option>
                   <option value="sex">By sex</option>
                 </select>
+
+								<p className="text-xs text-slate-500">
+									Grouping mode controls how values are separated before tests are calculated.
+									Student’s t-test and Mann-Whitney U-test require exactly two groups.
+								</p>
               </div>
 
               <div className="space-y-3">
@@ -432,6 +447,10 @@ function NewStatisticalAnalysisPage() {
                 <p className="text-sm font-medium text-slate-700">
                   Statistical tests
                 </p>
+
+								<p className="text-xs text-slate-500">
+									Two-group tests require grouping mode "By group" or "By sex" and exactly two valid groups.
+								</p>
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   {TEST_OPTIONS.map((option) => (

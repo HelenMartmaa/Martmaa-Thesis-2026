@@ -49,7 +49,7 @@ function SavedExperimentsPage() {
           Saved Experiments
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          View experiments previously saved under your account.
+          View experiments previously saved under your account. Additional information about subject groups, subjects and team members can be added in detailed view.
         </p>
       </div>
 
@@ -123,7 +123,7 @@ function SavedExperimentsPage() {
 
 							<div className="pt-2">
 								<Button asChild variant="outline">
-								<Link to={`/planning/${experiment.id}`}>Open Experiment</Link>
+								<Link to={`/planning/${experiment.id}`}>Open Detailed view</Link>
 								</Button>
 							</div>
 

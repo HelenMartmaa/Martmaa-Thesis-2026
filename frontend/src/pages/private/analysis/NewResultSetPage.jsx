@@ -222,11 +222,11 @@ function NewResultSetPage() {
     <section className="space-y-8">
       <div className="space-y-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          New Result Set
+          New Result Dataset
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Define the dataset details, enter the measured values below, and save
-          everything together in one flow.
+          Define the dataset details, enter the measured values below, and save 
+          everything together in one flow. One planned experiment can have several linked result datasets.
         </p>
       </div>
 

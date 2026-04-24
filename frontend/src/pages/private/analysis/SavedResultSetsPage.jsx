@@ -44,10 +44,10 @@ function SavedResultSetsPage() {
     <section className="space-y-8">
       <div className="space-y-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Saved Result Sets
+          Saved Result Datasets
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Review previously created result sets and open them for more details.
+          Review previously created result datasets and open them for more details. Options for dataset updating, deleting or using in statistical analysis can be carried out in detailed view.
         </p>
       </div>
 

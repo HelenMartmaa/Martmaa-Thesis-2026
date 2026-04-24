@@ -54,6 +54,25 @@ const createStatisticalAnalysisService = async ({
 
   const pythonResults = await runPythonAnalysis(payload);
 
+	// If Python service reports a general analysis error (no numerical values, no grouping, not enough data etc), do not save the analysis.
+	if (pythonResults.error) {
+		throw new Error(pythonResults.error);
+	}
+
+	// If a selected test could not be calculated, do not save the analysis.
+	const failedTest = pythonResults.tests
+		? Object.values(pythonResults.tests).find(
+				(testResult) =>
+					testResult &&
+					testResult.pValue === null &&
+					testResult.message
+			)
+		: null;
+
+	if (failedTest) {
+		throw new Error(failedTest.message);
+	}
+
   return createStatisticalAnalysis({
     userId,
     resultSetId: parsedResultSetId,

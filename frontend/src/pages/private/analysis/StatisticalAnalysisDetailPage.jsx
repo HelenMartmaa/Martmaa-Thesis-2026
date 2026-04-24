@@ -207,12 +207,37 @@ function StatisticalAnalysisDetailPage() {
 
   const errorRef = useRef(null);
   const successRef = useRef(null);
+	const resultsRef = useRef(null);
 
+	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+	const deleteConfirmRef = useRef(null);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+
+	useEffect(() => {
+		if (showDeleteConfirm && deleteConfirmRef.current) {
+			deleteConfirmRef.current.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
+
+			deleteConfirmRef.current.focus();
+		}
+	}, [showDeleteConfirm]);
+
+	useEffect(() => {
+		if (!loading && !error && analysis && resultsRef.current) {
+			resultsRef.current.scrollIntoView({
+				behavior: "smooth",
+				block: "start",
+			});
+
+			resultsRef.current.focus();
+		}
+	}, [loading, error, analysis]);
 
   useEffect(() => {
     if (error && errorRef.current) {
@@ -275,6 +300,30 @@ function StatisticalAnalysisDetailPage() {
       return null;
     }
   }, [analysis]);
+
+	const formattedMetricLabels = useMemo(() => {
+		return parsedMetrics.map((metric) => METRIC_LABELS[metric] || metric);
+	}, [parsedMetrics]);
+
+	const RAW_TEST_LABELS = {
+		shapiro_wilk: "Shapiro-Wilk test",
+		student_t_test: "Student’s t-test",
+		mann_whitney_u: "Mann-Whitney U-test",
+	};
+
+	const formattedTestLabels = useMemo(() => {
+		return parsedTests.map((test) => RAW_TEST_LABELS[test] || TEST_LABELS[test] || test);
+	}, [parsedTests]);
+
+	const openDeleteConfirm = () => {
+		setError("");
+		setSuccessMessage("");
+		setShowDeleteConfirm(true);
+	};
+
+	const closeDeleteConfirm = () => {
+		setShowDeleteConfirm(false);
+	};
 
   const handleDelete = async () => {
     try {
@@ -365,20 +414,24 @@ function StatisticalAnalysisDetailPage() {
             <CardContent className="space-y-3 text-sm text-slate-600">
               <p>
                 <span className="font-medium text-slate-900">Metrics:</span>{" "}
-                {parsedMetrics.length > 0 ? parsedMetrics.join(", ") : "None"}
+                {formattedMetricLabels.length > 0 ? formattedMetricLabels.join(", ") : "None"}
               </p>
 
               <p>
                 <span className="font-medium text-slate-900">Tests:</span>{" "}
-                {parsedTests.length > 0 ? parsedTests.join(", ") : "None"}
+                {formattedTestLabels.length > 0 ? formattedTestLabels.join(", ") : "None"}
               </p>
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Analysis Results</CardTitle>
-            </CardHeader>
+          <Card
+						ref={resultsRef}
+						tabIndex="-1"
+						className="rounded-3xl border-slate-200 shadow-sm outline-none"
+					>
+						<CardHeader>
+							<CardTitle>Analysis Results</CardTitle>
+						</CardHeader>
 
             <CardContent className="space-y-6 text-sm text-slate-600">
 							{!parsedResults ? (
@@ -437,17 +490,53 @@ function StatisticalAnalysisDetailPage() {
 								</>
 							)}
 						</CardContent>
-
           </Card>
+
+					{showDeleteConfirm && (
+						<div
+							ref={deleteConfirmRef}
+							tabIndex="-1"
+							className="rounded-2xl border border-red-200 bg-red-50 p-4 outline-none"
+						>
+							<p className="text-sm font-medium text-red-800">
+								Are you sure you want to delete this statistical analysis?
+							</p>
+
+							<p className="mt-1 text-sm text-red-700">
+								This action cannot be undone. The saved analysis result will be removed,
+								but the original result dataset will remain unchanged.
+							</p>
+
+							<div className="mt-4 flex flex-col gap-3 sm:flex-row">
+								<Button
+									type="button"
+									variant="destructive"
+									onClick={handleDelete}
+									disabled={isDeleting}
+								>
+									{isDeleting ? "Deleting..." : "Yes, delete analysis"}
+								</Button>
+
+								<Button
+									type="button"
+									variant="outline"
+									onClick={closeDeleteConfirm}
+									disabled={isDeleting}
+								>
+									Cancel
+								</Button>
+							</div>
+						</div>
+					)}
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               type="button"
               variant="destructive"
-              onClick={handleDelete}
+              onClick={openDeleteConfirm}
               disabled={isDeleting}
             >
-              {isDeleting ? "Deleting..." : "Delete analysis"}
+              Delete Analysis
             </Button>
           </div>
         </>

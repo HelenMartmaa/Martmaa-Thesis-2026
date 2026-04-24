@@ -36,7 +36,7 @@ function SavedStatisticalAnalysesPage() {
           Saved Statistical Analyses
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-          Review previously generated statistical analyses and open their details.
+          Review previously generated statistical analyses and open their details. Saved analyses can be deleted, but cannot be updated.
         </p>
       </div>
 

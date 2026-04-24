@@ -62,7 +62,7 @@ function DashboardHeader() {
 
           <div className="group relative">
             <button type="button" className="inline-flex items-center gap-2 rounded-xl border border-transparent px-4 py-2 text-m font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900">
-              Analysis
+              Result Datasets / Analysis
               <span className="text-xs text-slate-500">⮟</span>
             </button>
 
@@ -129,7 +129,7 @@ function DashboardHeader() {
             </div>
 
             <div>
-              <p className="mb-2 text-sm font-semibold text-slate-900">Analysis</p>
+              <p className="mb-2 text-sm font-semibold text-slate-900">Result Datasets / Analysis</p>
               <div className="space-y-1">
                 <Link
                   to="/analysis/new"
