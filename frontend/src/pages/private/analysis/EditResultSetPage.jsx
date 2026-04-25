@@ -37,6 +37,7 @@ function EditResultSetPage() {
 
   const errorRef = useRef(null);
   const successRef = useRef(null);
+	const [datasetSource, setDatasetSource] = useState("standalone");
 
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(true);
@@ -97,6 +98,12 @@ function EditResultSetPage() {
     loadExperiments();
   }, [token]);
 
+	const selectedExperiment = useMemo(() => {
+		return experiments.find(
+			(experiment) => String(experiment.id) === String(formData.experimentId)
+		);
+	}, [experiments, formData.experimentId]);
+
   useEffect(() => {
     const loadResultSetAndEntries = async () => {
       try {
@@ -114,6 +121,8 @@ function EditResultSetPage() {
           measurementUnit: loadedResultSet.measurementUnit || "",
           description: loadedResultSet.description || "",
         });
+
+				setDatasetSource(loadedResultSet.experimentId ? "linked" : "standalone");
 
         const entriesResponse = await getResultEntriesRequest(id, token);
         const loadedEntries = entriesResponse.entries || [];
@@ -371,6 +380,10 @@ function EditResultSetPage() {
             setFormData={setFormData}
             experiments={experiments}
             loadingExperiments={loadingExperiments}
+						datasetSource={datasetSource}
+						setDatasetSource={setDatasetSource}
+						selectedExperiment={selectedExperiment}
+						isEditMode={true}
           />
 
           <ResultSetSummaryCard

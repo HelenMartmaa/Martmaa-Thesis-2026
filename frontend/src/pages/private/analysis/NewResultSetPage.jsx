@@ -49,6 +49,21 @@ function NewResultSetPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+	const selectedExperiment = useMemo(() => {
+		return experiments.find(
+			(experiment) => String(experiment.id) === String(formData.experimentId)
+		);
+	}, [experiments, formData.experimentId]);
+
+	useEffect(() => {
+		if (datasetSource === "linked" && selectedExperiment?.experimentType) {
+			setFormData((prev) => ({
+				...prev,
+				experimentType: selectedExperiment.experimentType,
+			}));
+		}
+	}, [datasetSource, selectedExperiment]);
+
   // For error message
   useEffect(() => {
     if (error && errorRef.current) {

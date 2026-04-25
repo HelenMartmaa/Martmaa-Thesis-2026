@@ -28,6 +28,8 @@ function ResultSetDetailsSection({
   loadingExperiments,
 	datasetSource,
 	setDatasetSource,
+	selectedExperiment,
+	isEditMode = false,
 }) {
   const handleChange = (event) => {
     setFormData((prev) => ({
@@ -47,6 +49,12 @@ function ResultSetDetailsSection({
 		}
 	};
 
+	const formatExperimentType = (value) => {
+		if (value === "in_vivo") return "in vivo";
+		if (value === "in_vitro") return "in vitro";
+		return value || "—";
+	};
+
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader>
@@ -63,12 +71,13 @@ function ResultSetDetailsSection({
 							<div className="grid gap-3 sm:grid-cols-2">
 								<button
 									type="button"
+									disabled={isEditMode}
 									onClick={() => handleDatasetSourceChange("linked")}
 									className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
 										datasetSource === "linked"
 											? "border-slate-900 bg-slate-100 text-slate-900"
 											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-									}`}
+									} ${isEditMode ? "cursor-not-allowed opacity-70" : ""}`}
 								>
 									<span className="block font-medium">Link to planned experiment</span>
 									<span className="mt-1 block text-xs text-slate-500">
@@ -78,12 +87,13 @@ function ResultSetDetailsSection({
 
 								<button
 									type="button"
+									disabled={isEditMode}
 									onClick={() => handleDatasetSourceChange("standalone")}
 									className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
 										datasetSource === "standalone"
 											? "border-slate-900 bg-slate-100 text-slate-900"
 											: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-									}`}
+									} ${isEditMode ? "cursor-not-allowed opacity-70" : ""}`}
 								>
 									<span className="block font-medium">Standalone dataset</span>
 									<span className="mt-1 block text-xs text-slate-500">
@@ -91,6 +101,11 @@ function ResultSetDetailsSection({
 									</span>
 								</button>
 							</div>
+							{isEditMode && (
+								<p className="text-xs text-slate-500">
+									Dataset source cannot be changed after creation. Create a new dataset if you need a different source type.
+								</p>
+							)}
 						</div>
 
 						{datasetSource === "linked" && (
@@ -133,38 +148,50 @@ function ResultSetDetailsSection({
               />
             </div>
 
-            <div className="space-y-3">
-              <Label>
-                Experiment type
-                <FieldRequirement required />
-              </Label>
+						<div className="space-y-3">
+							<Label>
+								Experiment type
+								<FieldRequirement required />
+							</Label>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="radio"
-                    name="experimentType"
-                    value="in_vivo"
-                    checked={formData.experimentType === "in_vivo"}
-                    onChange={handleChange}
-                    required
-                  />
-                  <i>in vivo</i>
-                </label>
+							{datasetSource === "linked" ? (
+								<div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+									<p>
+										<span className="font-medium text-slate-900">Experiment type:</span>{" "}
+										<i>{formatExperimentType(formData.experimentType)}</i>
+									</p>
+									<p className="mt-1 text-xs text-slate-500">
+										This value is inherited from the linked planned experiment and cannot be changed here.
+									</p>
+								</div>
+							) : (
+								<div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
+									<label className="flex items-center gap-2 text-sm text-slate-700">
+										<input
+											type="radio"
+											name="experimentType"
+											value="in_vivo"
+											checked={formData.experimentType === "in_vivo"}
+											onChange={handleChange}
+											required
+										/>
+										<i>in vivo</i>
+									</label>
 
-                <label className="flex items-center gap-2 text-sm text-slate-700">
-                  <input
-                    type="radio"
-                    name="experimentType"
-                    value="in_vitro"
-                    checked={formData.experimentType === "in_vitro"}
-                    onChange={handleChange}
-                    required
-                  />
-                  <i>in vitro</i>
-                </label>
-              </div>
-            </div>
+									<label className="flex items-center gap-2 text-sm text-slate-700">
+										<input
+											type="radio"
+											name="experimentType"
+											value="in_vitro"
+											checked={formData.experimentType === "in_vitro"}
+											onChange={handleChange}
+											required
+										/>
+										<i>in vitro</i>
+									</label>
+								</div>
+							)}
+						</div>
 
             <div className="space-y-2">
               <Label htmlFor="measurementName">
