@@ -23,6 +23,7 @@ class AnalysisRequest(BaseModel):
     groupingMode: Optional[str] = None
     selectedMetrics: List[str] = []
     selectedTests: List[str] = []
+    comparisonGroups: List[str] = []
     filters: dict = {}
     chartConfig: dict = {}
     entries: List[ResultEntry]
@@ -117,7 +118,7 @@ def split_values_by_group(entries: List[ResultEntry], grouping_mode: Optional[st
         if grouping_mode == "sex":
             key = entry.sex or "unspecified"
         elif grouping_mode == "group":
-            key = str(entry.groupId or entry.groupLabel or "unspecified")
+            key = entry.groupLabel or str(entry.groupId or "unspecified")
         else:
             key = "all"
 
@@ -128,18 +129,77 @@ def split_values_by_group(entries: List[ResultEntry], grouping_mode: Optional[st
 
     return groups
 
+# For presenting calculations for selected group
+def calculate_group_statistics(values: List[float], selected_metrics: List[str]) -> dict:
+    result = {
+        "count": len(values)
+    }
+
+    if not values:
+        return result
+
+    if "mean" in selected_metrics:
+        result["mean"] = get_mean(values)
+
+    if "median" in selected_metrics:
+        result["median"] = get_median(values)
+
+    if "standard_deviation" in selected_metrics:
+        result["standardDeviation"] = get_standard_deviation(values)
+
+    if "variance" in selected_metrics:
+        result["variance"] = get_variance(values)
+
+    if "standard_error" in selected_metrics:
+        result["standardError"] = get_standard_error(values)
+
+    if "range" in selected_metrics:
+        result["range"] = get_range(values)
+
+    result["confidenceInterval95"] = get_confidence_interval_95(values)
+
+    return result
+
 # Student t-test
-def run_student_t_test(groups: dict) -> dict:
-    valid_groups = [values for values in groups.values() if len(values) > 0]
+def run_student_t_test(groups: dict, comparison_groups: List[str]) -> dict:
+    if comparison_groups:
+        if len(comparison_groups) != 2:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "Student’s t-test requires exactly two selected groups."
+            }
 
-    if len(valid_groups) != 2:
-        return {
-            "statistic": None,
-            "pValue": None,
-            "message": "Student’s t-test requires exactly two groups."
-        }
+        missing_groups = [
+            group for group in comparison_groups if group not in groups
+        ]
 
-    if len(valid_groups[0]) < 2 or len(valid_groups[1]) < 2:
+        if missing_groups:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "One or more selected comparison groups were not found in the dataset."
+            }
+
+        group_a = groups[comparison_groups[0]]
+        group_b = groups[comparison_groups[1]]
+    else:
+        valid_group_items = [
+            (name, values) for name, values in groups.items() if len(values) > 0
+        ]
+
+        if len(valid_group_items) != 2:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "Student’s t-test requires exactly two groups. Please select two groups to compare."
+            }
+
+        group_a = valid_group_items[0][1]
+        group_b = valid_group_items[1][1]
+        comparison_groups = [valid_group_items[0][0], valid_group_items[1][0]]
+
+    if len(group_a) < 2 or len(group_b) < 2:
         return {
             "statistic": None,
             "pValue": None,
@@ -147,38 +207,68 @@ def run_student_t_test(groups: dict) -> dict:
         }
 
     statistic, p_value = stats.ttest_ind(
-        valid_groups[0],
-        valid_groups[1],
+        group_a,
+        group_b,
         equal_var=False
     )
 
     return {
         "statistic": statistic,
         "pValue": p_value,
+        "comparisonGroups": comparison_groups,
         "message": "Welch’s independent samples t-test was used. Should be used for normally distributed data."
     }
 
 # Mann-Whitney U-test
-def run_mann_whitney_u(groups: dict) -> dict:
-    valid_groups = [values for values in groups.values() if len(values) > 0]
+def run_mann_whitney_u(groups: dict, comparison_groups: List[str]) -> dict:
+    if comparison_groups:
+        if len(comparison_groups) != 2:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "Mann-Whitney U-test requires exactly two selected groups."
+            }
 
-    if len(valid_groups) != 2:
-        return {
-            "statistic": None,
-            "pValue": None,
-            "message": "Mann-Whitney U-test requires exactly two groups."
-        }
+        missing_groups = [
+            group for group in comparison_groups if group not in groups
+        ]
+
+        if missing_groups:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "One or more selected comparison groups were not found in the dataset."
+            }
+
+        group_a = groups[comparison_groups[0]]
+        group_b = groups[comparison_groups[1]]
+    else:
+        valid_group_items = [
+            (name, values) for name, values in groups.items() if len(values) > 0
+        ]
+
+        if len(valid_group_items) != 2:
+            return {
+                "statistic": None,
+                "pValue": None,
+                "message": "Mann-Whitney U-test requires exactly two groups. Please select two groups to compare."
+            }
+
+        group_a = valid_group_items[0][1]
+        group_b = valid_group_items[1][1]
+        comparison_groups = [valid_group_items[0][0], valid_group_items[1][0]]
 
     statistic, p_value = stats.mannwhitneyu(
-        valid_groups[0],
-        valid_groups[1],
+        group_a,
+        group_b,
         alternative="two-sided"
     )
 
     return {
         "statistic": statistic,
         "pValue": p_value,
-        "message": "Two-sided Mann-Whitney U-test was used. Should be used for not normally distributed data. "
+        "comparisonGroups": comparison_groups,
+        "message": "Two-sided Mann-Whitney U-test was used. THis test result should be used for not normally distributed data. "
     }
 
 @app.post("/analyze")
@@ -228,23 +318,35 @@ def analyze_dataset(payload: AnalysisRequest):
 
     groups = split_values_by_group(payload.entries, payload.groupingMode)
 
+    group_statistics = {
+        key: calculate_group_statistics(group_values, payload.selectedMetrics)
+        for key, group_values in groups.items()
+    }
+
     test_results = {}
 
     if "shapiro_wilk" in payload.selectedTests:
         test_results["shapiroWilk"] = run_shapiro_wilk(values)
 
     if "student_t_test" in payload.selectedTests:
-        test_results["studentTTest"] = run_student_t_test(groups)
+        test_results["studentTTest"] = run_student_t_test(
+					groups,
+					payload.comparisonGroups
+      	)
 
     if "mann_whitney_u" in payload.selectedTests:
-        test_results["mannWhitneyU"] = run_mann_whitney_u(groups)
+        test_results["mannWhitneyU"] = run_mann_whitney_u(
+					groups,
+					payload.comparisonGroups
+				)
 
     return {
-        "entryCount": len(payload.entries),
-        "numericValueCount": len(values),
-        "groupingMode": payload.groupingMode,
-        "groupCount": len(groups),
-        "groups": {
+				"entryCount": len(payload.entries),
+				"numericValueCount": len(values),
+				"groupingMode": payload.groupingMode,
+				"groupCount": len(groups),
+				"comparisonGroups": payload.comparisonGroups,
+				"groups": {
             key: {
                 "count": len(group_values),
                 "mean": get_mean(group_values) if len(group_values) > 0 else None,
@@ -252,6 +354,7 @@ def analyze_dataset(payload: AnalysisRequest):
             }
             for key, group_values in groups.items()
         },
+        "groupStatistics": group_statistics,
         "descriptiveMetrics": descriptive_results,
         "confidenceIntervals": confidence_intervals,
         "tests": test_results,

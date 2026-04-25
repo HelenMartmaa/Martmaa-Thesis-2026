@@ -70,7 +70,6 @@ __**NB! Valimite määramine ei saa täiesti vaba olla, sest muidu tekib liiga s
 - Shapiro-Wilk test OR Kolmogorov-Smirnov test normaalsuse hindamiseks
 - Student's t-test (paired ja unpaired) parameetrilise analüüsi jaoks
 - Mann-Whitney U test mitte-parameetrilise analüüsi jaoks
-- ANOVA???
 - kasvukiirus (mikroorganismidel)
 - kahekordistumisaeg (mikroorganismidel)
 - Kaplan-Meieri meetod/kõver (mitte-parameetriline)

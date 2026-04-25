@@ -78,6 +78,82 @@ function DescriptiveMetricsTable({ metrics }) {
   );
 }
 
+function GroupWiseMetricsTable({ groupStatistics }) {
+  if (!groupStatistics || Object.keys(groupStatistics).length === 0) {
+    return <p className="text-sm text-slate-500">No group-wise metrics available.</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-slate-200">
+      <table className="min-w-full text-sm">
+        <thead className="bg-slate-100 text-slate-700">
+          <tr>
+            <th className="px-3 py-3 text-left font-medium">Group</th>
+            <th className="px-3 py-3 text-left font-medium">N</th>
+            <th className="px-3 py-3 text-left font-medium">Mean</th>
+            <th className="px-3 py-3 text-left font-medium">Median</th>
+            <th className="px-3 py-3 text-left font-medium">SD</th>
+            <th className="px-3 py-3 text-left font-medium">Variance</th>
+            <th className="px-3 py-3 text-left font-medium">SE</th>
+            <th className="px-3 py-3 text-left font-medium">Range</th>
+            <th className="px-3 py-3 text-left font-medium">95% CI</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y divide-slate-200 bg-white">
+          {Object.entries(groupStatistics).map(([groupName, values]) => (
+            <tr key={groupName}>
+              <td className="px-3 py-3 align-top font-medium text-slate-900">
+                {groupName}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {values.count ?? "—"}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {formatNumber(values.mean)}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {formatNumber(values.median)}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {formatNumber(values.standardDeviation)}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {formatNumber(values.variance)}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {formatNumber(values.standardError)}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {values.range
+                  ? `${formatNumber(values.range.min)}–${formatNumber(
+                      values.range.max
+                    )}`
+                  : "—"}
+              </td>
+
+              <td className="px-3 py-3 align-top text-slate-600">
+                {values.confidenceInterval95
+                  ? `${formatNumber(values.confidenceInterval95.lower)} – ${formatNumber(
+                      values.confidenceInterval95.upper
+                    )}`
+                  : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function StatisticalTestsTable({ tests }) {
   if (!tests || Object.keys(tests).length === 0) {
     return <p className="text-sm text-slate-500">No statistical tests available.</p>;
@@ -101,14 +177,24 @@ function StatisticalTestsTable({ tests }) {
               <td className="px-3 py-3 font-medium text-slate-900">
                 {TEST_LABELS[key] || key}
               </td>
+
               <td className="px-3 py-3 text-slate-600">
                 {formatNumber(value.statistic)}
               </td>
+
               <td className="px-3 py-3 text-slate-600">
                 {formatNumber(value.pValue)}
               </td>
+
               <td className="px-3 py-3 text-slate-600">
-                {value.message || "—"}
+                {value.comparisonGroups?.length === 2 && (
+                  <span className="block">
+                    Compared: {value.comparisonGroups[0]} vs{" "}
+                    {value.comparisonGroups[1]}
+                  </span>
+                )}
+
+                <span>{value.message || "—"}</span>
               </td>
             </tr>
           ))}
@@ -471,8 +557,23 @@ function StatisticalAnalysisDetailPage() {
 										<GroupsSummaryTable groups={parsedResults.groups} />
 									</div>
 
+									{["group", "sex"].includes(parsedResults.groupingMode) && (
+										<div className="space-y-2">
+											<p className="font-medium text-slate-900">
+												Group-wise descriptive metrics:
+											</p>
+											<GroupWiseMetricsTable
+												groupStatistics={parsedResults.groupStatistics}
+											/>
+										</div>
+									)}
+
 									<div className="space-y-2">
-										<p className="font-medium text-slate-900">Descriptive metrics:</p>
+										<p className="font-medium text-slate-900">
+											{["group", "sex"].includes(parsedResults.groupingMode)
+												? "Descriptive metrics for whole dataset:"
+												: "Descriptive metrics:"}
+										</p>
 										<DescriptiveMetricsTable metrics={parsedResults.descriptiveMetrics} />
 									</div>
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
 import { getResultSetByIdRequest, getResultSetsRequest } from "../../../features/analysis/resultSetApi";
 import { createStatisticalAnalysisRequest } from "../../../features/analysis/statisticalAnalysisApi";
+import { getResultEntriesRequest } from "../../../features/analysis/resultEntryApi";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import BackToTopButton from "../../../components/common/BackToTopButton";
@@ -35,6 +36,10 @@ function NewStatisticalAnalysisPage() {
 	const [analysisSource, setAnalysisSource] = useState("saved_single");
 	const [availableResultSets, setAvailableResultSets] = useState([]);
 	const [selectedResultSetId, setSelectedResultSetId] = useState(resultSetId || "");
+
+	const [availableGroups, setAvailableGroups] = useState([]);
+	const [comparisonGroupA, setComparisonGroupA] = useState("");
+	const [comparisonGroupB, setComparisonGroupB] = useState("");
 
   const [resultSet, setResultSet] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -174,6 +179,32 @@ function NewStatisticalAnalysisPage() {
 			return "Student’s t-test and Mann-Whitney U-test require grouping mode By group or By sex.";
 		}
 
+		if (
+			selectedTwoGroupTests &&
+			["group", "sex"].includes(formData.groupingMode) &&
+			availableGroups.length < 2
+		) {
+			return "At least two valid groups are required for Student’s t-test or Mann-Whitney U-test.";
+		}
+
+		if (
+			selectedTwoGroupTests &&
+			["group", "sex"].includes(formData.groupingMode) &&
+			availableGroups.length > 2 &&
+			(!comparisonGroupA || !comparisonGroupB)
+		) {
+			return "Please select two groups to compare.";
+		}
+
+		if (
+			selectedTwoGroupTests &&
+			comparisonGroupA &&
+			comparisonGroupB &&
+			comparisonGroupA === comparisonGroupB
+		) {
+			return "Please select two different groups to compare.";
+		}
+
     return "";
   };
 
@@ -197,6 +228,10 @@ function NewStatisticalAnalysisPage() {
 				groupingMode: formData.groupingMode,
 				selectedMetrics: formData.selectedMetrics,
 				selectedTests: formData.selectedTests,
+				comparisonGroups:
+					hasTwoGroupTestSelected && comparisonGroupA && comparisonGroupB
+						? [comparisonGroupA, comparisonGroupB]
+						: [],
 				filters: {},
 				chartConfig: {},
 			};
@@ -217,6 +252,63 @@ function NewStatisticalAnalysisPage() {
 			setIsSubmitting(false);
 		}
 	};
+
+	// Check if the test that requires 2 groups has been chosen
+	const hasTwoGroupTestSelected = formData.selectedTests.some((test) =>
+		["student_t_test", "mann_whitney_u"].includes(test)
+	);
+
+	useEffect(() => {
+		const loadGroupsForSelectedDataset = async () => {
+			if (!selectedResultSetId || formData.groupingMode === "none") {
+				setAvailableGroups([]);
+				setComparisonGroupA("");
+				setComparisonGroupB("");
+				return;
+			}
+
+			try {
+				const data = await getResultEntriesRequest(selectedResultSetId, token);
+				const entries = data.entries || [];
+
+				const groupNames = entries
+					.map((entry) => {
+						if (formData.groupingMode === "sex") {
+							return entry.sex || "unspecified";
+						}
+
+						if (formData.groupingMode === "group") {
+							if (entry.group) {
+								return `${entry.group.name} — ${entry.group.groupType}`;
+							}
+
+							return entry.groupLabel || "unspecified";
+						}
+
+						return null;
+					})
+					.filter(Boolean);
+
+				const uniqueGroups = [...new Set(groupNames)];
+
+				setAvailableGroups(uniqueGroups);
+
+				if (uniqueGroups.length === 2) {
+					setComparisonGroupA(uniqueGroups[0]);
+					setComparisonGroupB(uniqueGroups[1]);
+				} else {
+					setComparisonGroupA("");
+					setComparisonGroupB("");
+				}
+			} catch (err) {
+				setAvailableGroups([]);
+				setComparisonGroupA("");
+				setComparisonGroupB("");
+			}
+		};
+
+		loadGroupsForSelectedDataset();
+	}, [selectedResultSetId, formData.groupingMode, token]);
 
   return (
     <section className="space-y-8">
@@ -441,6 +533,71 @@ function NewStatisticalAnalysisPage() {
 									Student’s t-test and Mann-Whitney U-test require exactly two groups.
 								</p>
               </div>
+							{hasTwoGroupTestSelected && ["group", "sex"].includes(formData.groupingMode) && availableGroups.length > 2 && (
+								<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+									<p className="text-sm font-medium text-amber-900">
+										Select groups to compare
+									</p>
+
+									<p className="mt-1 text-xs text-amber-800">
+										More than two groups were detected. Please select exactly two groups for
+										Student’s t-test or Mann-Whitney U-test.
+									</p>
+
+									<div className="mt-4 grid gap-4 sm:grid-cols-2">
+										<div className="space-y-2">
+											<label
+												htmlFor="comparisonGroupA"
+												className="text-sm font-medium text-slate-700"
+											>
+												Group A
+											</label>
+											<select
+												id="comparisonGroupA"
+												value={comparisonGroupA}
+												onChange={(event) => setComparisonGroupA(event.target.value)}
+												className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+											>
+												<option value="">Select group</option>
+												{availableGroups.map((groupName) => (
+													<option key={groupName} value={groupName}>
+														{groupName}
+													</option>
+												))}
+											</select>
+										</div>
+
+										<div className="space-y-2">
+											<label
+												htmlFor="comparisonGroupB"
+												className="text-sm font-medium text-slate-700"
+											>
+												Group B
+											</label>
+											<select
+												id="comparisonGroupB"
+												value={comparisonGroupB}
+												onChange={(event) => setComparisonGroupB(event.target.value)}
+												className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+											>
+												<option value="">Select group</option>
+												{availableGroups.map((groupName) => (
+													<option key={groupName} value={groupName}>
+														{groupName}
+													</option>
+												))}
+											</select>
+										</div>
+									</div>
+								</div>
+							)}
+
+							{hasTwoGroupTestSelected && ["group", "sex"].includes(formData.groupingMode) && availableGroups.length === 2 && (
+								<div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+									Two groups detected automatically: {availableGroups[0]} and{" "}
+									{availableGroups[1]}.
+								</div>
+							)}
 
               <div className="space-y-3">
                 <p className="text-sm font-medium text-slate-700">

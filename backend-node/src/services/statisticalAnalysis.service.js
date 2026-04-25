@@ -11,6 +11,7 @@ const createStatisticalAnalysisService = async ({
   groupingMode,
   selectedMetrics,
   selectedTests,
+	comparisonGroups,
   filters,
   chartConfig,
 }) => {
@@ -38,18 +39,21 @@ const createStatisticalAnalysisService = async ({
     groupingMode: groupingMode || null,
     selectedMetrics: selectedMetrics || [],
     selectedTests: selectedTests || [],
+		comparisonGroups: comparisonGroups || [],
     filters: filters || {},
     chartConfig: chartConfig || {},
-    entries: entries.map((entry) => ({
-      numericValue: entry.numericValue,
-      timepointValue: entry.timepointValue,
-      eventOccurred: entry.eventOccurred,
-      sex: entry.sex,
-      subjectId: entry.subjectId,
-      groupId: entry.groupId,
-      sampleCode: entry.sampleCode,
-      groupLabel: entry.groupLabel,
-    })),
+		entries: entries.map((entry) => ({
+			numericValue: entry.numericValue,
+			timepointValue: entry.timepointValue,
+			eventOccurred: entry.eventOccurred,
+			sex: entry.sex,
+			subjectId: entry.subjectId,
+			groupId: entry.groupId,
+			sampleCode: entry.sampleCode,
+			groupLabel: entry.group
+				? `${entry.group.name} — ${entry.group.groupType}`
+				: entry.groupLabel,
+		})),
   };
 
   const pythonResults = await runPythonAnalysis(payload);
@@ -80,7 +84,10 @@ const createStatisticalAnalysisService = async ({
     groupingMode: groupingMode || null,
     selectedMetricsJson: JSON.stringify(selectedMetrics || []),
     selectedTestsJson: JSON.stringify(selectedTests || []),
-    filtersJson: JSON.stringify(filters || {}),
+    filtersJson: JSON.stringify({
+			...(filters || {}),
+			comparisonGroups: comparisonGroups || [],
+		}),
     resultsJson: JSON.stringify(pythonResults),
     chartConfigJson: JSON.stringify(chartConfig || {}),
   });
