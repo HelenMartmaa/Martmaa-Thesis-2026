@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
-import {
-  deleteStatisticalAnalysisRequest,
-  getStatisticalAnalysisByIdRequest,
-} from "../../../features/analysis/statisticalAnalysisApi";
+import { deleteStatisticalAnalysisRequest, getStatisticalAnalysisByIdRequest } from "../../../features/analysis/statisticalAnalysisApi";
+import ResultEntriesTable from "../../../components/analysis/ResultEntriesTable";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import BackToTopButton from "../../../components/common/BackToTopButton";
@@ -295,6 +293,8 @@ function StatisticalAnalysisDetailPage() {
   const successRef = useRef(null);
 	const resultsRef = useRef(null);
 
+	const [showDatasetEntries, setShowDatasetEntries] = useState(false);
+
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 	const deleteConfirmRef = useRef(null);
   const [analysis, setAnalysis] = useState(null);
@@ -492,12 +492,14 @@ function StatisticalAnalysisDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-3xl border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle>Selected Metrics and Tests</CardTitle>
-            </CardHeader>
+					<Card className="rounded-3xl border-sky-100 bg-sky-100 shadow-sm">
+						<CardHeader>
+							<CardTitle className="text-sky-950">
+								Selected Metrics and Tests
+							</CardTitle>
+						</CardHeader>
 
-            <CardContent className="space-y-3 text-sm text-slate-600">
+						<CardContent className="space-y-3 text-sm text-sky-900">
               <p>
                 <span className="font-medium text-slate-900">Metrics:</span>{" "}
                 {formattedMetricLabels.length > 0 ? formattedMetricLabels.join(", ") : "None"}
@@ -509,6 +511,31 @@ function StatisticalAnalysisDetailPage() {
               </p>
             </CardContent>
           </Card>
+
+					<Card className="rounded-3xl border-slate-200 shadow-sm">
+						<CardHeader>
+							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+								<CardTitle>Saved Result Entries</CardTitle>
+
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => setShowDatasetEntries((prev) => !prev)}
+								>
+									{showDatasetEntries ? "Hide result entries" : "Show result entries"}
+								</Button>
+							</div>
+						</CardHeader>
+
+						{showDatasetEntries && (
+							<CardContent>
+								<ResultEntriesTable
+									entries={analysis.resultSet?.entries || []}
+									isLinkedExperiment={Boolean(analysis.resultSet?.experimentId)}
+								/>
+							</CardContent>
+						)}
+					</Card>
 
           <Card
 						ref={resultsRef}

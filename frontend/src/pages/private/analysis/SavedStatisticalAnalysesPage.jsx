@@ -60,6 +60,17 @@ function SavedStatisticalAnalysesPage() {
                 <CardTitle className="text-lg sm:text-xl">
                   {analysis.analysisName}
                 </CardTitle>
+									<span
+										className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-medium ${
+											analysis.resultSet?.experimentId
+												? "bg-blue-100 text-blue-700"
+												: "bg-slate-100 text-slate-700"
+										}`}
+									>
+										{analysis.resultSet?.experimentId
+											? "Linked experiment analysis"
+											: "Standalone analysis"}
+									</span>
               </CardHeader>
 
               <CardContent className="space-y-3 text-sm text-slate-600">

@@ -28,9 +28,6 @@ const createStatisticalAnalysis = async ({
       resultsJson,
       chartConfigJson,
     },
-    include: {
-      resultSet: true,
-    },
   });
 };
 
@@ -52,9 +49,21 @@ const getStatisticalAnalysisByIdAndUserId = async (analysisId, userId) => {
       id: analysisId,
       userId,
     },
-    include: {
-      resultSet: true,
-    },
+		include: {
+			resultSet: {
+				include: {
+					entries: {
+						include: {
+							subject: true,
+							group: true,
+						},
+						orderBy: {
+							id: "asc",
+						},
+					},
+				},
+			},
+		},
   });
 };
 

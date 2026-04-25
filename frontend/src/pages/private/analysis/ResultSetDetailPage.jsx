@@ -218,6 +218,17 @@ function ResultSetDetailPage() {
             </div>
           )}
 
+{/* 			This button will be used when the data entry logic has been improved for more massive data inserting */}
+{/* 
+					<div className="flex flex-col gap-3 sm:flex-row">          
+						{resultSet.experimentId && (
+							<Button asChild variant="outline">
+								<Link to={`/analysis/new?experimentId=${resultSet.experimentId}`}>
+									+ Add another data table
+								</Link>
+							</Button>
+						)}
+          </div> */}
           <div className="flex flex-col gap-3 sm:flex-row">          
             <Button asChild variant="outline">
               <Link to={`/analysis/result-sets/${id}/edit`}>
