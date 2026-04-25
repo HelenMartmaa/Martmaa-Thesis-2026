@@ -133,7 +133,7 @@ function NewResultSetPage() {
     }
 
 		if (datasetSource === "linked" && !formData.experimentId) {
-  		return "Please select a planned experiment or choose standalone dataset.";
+  		return "Please select linked experiment or choose standalone dataset.";
 		}
 
     if (!formData.experimentType) {

@@ -21,6 +21,19 @@ const createResultSetService = async ({
   const normalizedExperimentType = experimentType?.trim();
   const trimmedMeasurementName = measurementName?.trim();
 
+  if (experimentId) {
+    const linkedExperiment = await getExperimentByIdAndUserId(
+        Number(experimentId),
+        userId
+    );
+
+    if (!linkedExperiment) {
+        throw new Error("Linked experiment not found.");
+    }
+
+    experimentType = linkedExperiment.experimentType;
+  }
+
   if (!trimmedTitle || !normalizedExperimentType || !trimmedMeasurementName) {
     throw new Error("Title, experiment type, and measurement name are required.");
   }
@@ -90,6 +103,15 @@ const updateResultSetService = async ({
   description,
 }) => {
   const parsedResultSetId = Number(resultSetId);
+
+	if (existingResultSet.experimentId) {
+		const linkedExperiment = await getExperimentByIdAndUserId(
+			existingResultSet.experimentId,
+			userId
+		);
+
+		experimentType = linkedExperiment.experimentType;
+	}
 
   if (!parsedResultSetId || Number.isNaN(parsedResultSetId)) {
     throw new Error("Invalid result set id.");

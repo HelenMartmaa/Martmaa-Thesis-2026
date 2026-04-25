@@ -31,6 +31,7 @@ function NewStatisticalAnalysisPage() {
   const errorRef = useRef(null);
   const successRef = useRef(null);
 
+	const isSourceLocked = Boolean(resultSetId);
 	const [analysisSource, setAnalysisSource] = useState("saved_single");
 	const [availableResultSets, setAvailableResultSets] = useState([]);
 	const [selectedResultSetId, setSelectedResultSetId] = useState(resultSetId || "");
@@ -221,8 +222,8 @@ function NewStatisticalAnalysisPage() {
     <section className="space-y-8">
       <div>
         <Button asChild variant="outline">
-          <Link to={`/analysis/saved/`}>
-            ⮜ Back To Result Datasets List</Link>
+          <Link to={resultSetId ? `/analysis/result-sets/${resultSetId}` : "/analysis/saved"}>
+            ⮜ Back to Saved Result Datasets</Link>
         </Button>
       </div>
 
@@ -266,12 +267,17 @@ function NewStatisticalAnalysisPage() {
 					<div className="grid gap-3 md:grid-cols-3">
 						<button
 							type="button"
-							onClick={() => setAnalysisSource("saved_single")}
+							onClick={() => {
+								if (!isSourceLocked) {
+									setAnalysisSource("saved_single");
+								}
+							}}
+							disabled={isSourceLocked}
 							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
 								analysisSource === "saved_single"
 									? "border-slate-900 bg-slate-100 text-slate-900"
 									: "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-							}`}
+							} ${isSourceLocked ? "cursor-not-allowed opacity-80" : ""}`}
 						>
 							<span className="block font-medium">Use saved result dataset</span>
 							<span className="mt-1 block text-xs text-slate-500">
@@ -281,7 +287,12 @@ function NewStatisticalAnalysisPage() {
 
 						<button
 							type="button"
-							onClick={() => setAnalysisSource("compare_two")}
+							onClick={() => {
+								if (!isSourceLocked) {
+									setAnalysisSource("compare_two");
+								}
+							}}
+							disabled={isSourceLocked}
 							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
 								analysisSource === "compare_two"
 									? "border-slate-900 bg-slate-100 text-slate-900"
@@ -296,7 +307,12 @@ function NewStatisticalAnalysisPage() {
 
 						<button
 							type="button"
-							onClick={() => setAnalysisSource("standalone_now")}
+							onClick={() => {
+								if (!isSourceLocked) {
+									setAnalysisSource("standalone_now");
+								}
+							}}							
+							disabled={isSourceLocked}
 							className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${
 								analysisSource === "standalone_now"
 									? "border-slate-900 bg-slate-100 text-slate-900"
@@ -308,6 +324,11 @@ function NewStatisticalAnalysisPage() {
 								Coming soon as a quick analysis workflow.
 							</span>
 						</button>
+						{isSourceLocked && (
+							<p className="text-xs text-slate-500">
+								Analysis source is locked because this analysis was started from a specific saved result dataset.
+							</p>
+						)}
 					</div>
 
 					{analysisSource === "saved_single" && !resultSetId && (

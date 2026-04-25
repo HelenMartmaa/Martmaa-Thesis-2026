@@ -81,6 +81,17 @@ function ResultEntriesEditorSection({
     );
   };
 
+	const getSelectedSubjectForRow = (row) => {
+		return subjects.find(
+			(subject) => String(subject.id) === String(row.subjectId)
+		);
+	};
+
+	const isSexLockedForRow = (row) => {
+		const selectedSubject = getSelectedSubjectForRow(row);
+		return Boolean(selectedSubject?.sex);
+	};
+
   const getSelectableSubjectsForRow = (row) => {
     if (!row.groupId) {
       return subjects;
@@ -112,18 +123,22 @@ function ResultEntriesEditorSection({
     );
   };
 
-  const toggleRowSex = (index, selectedSex) => {
-    setRows((prev) =>
-      prev.map((row, rowIndex) =>
-        rowIndex === index
-          ? {
-              ...row,
-              sex: row.sex === selectedSex ? "" : selectedSex,
-            }
-          : row
-      )
-    );
-  };
+	const toggleRowSex = (index, selectedSex) => {
+		setRows((prev) =>
+			prev.map((row, rowIndex) => {
+				if (rowIndex !== index) return row;
+
+				if (isSexLockedForRow(row)) {
+					return row;
+				}
+
+				return {
+					...row,
+					sex: row.sex === selectedSex ? "" : selectedSex,
+				};
+			})
+		);
+	};
 
   const handleNumericValueChange = (index, rawValue) => {
     let value = rawValue;
@@ -355,22 +370,31 @@ function ResultEntriesEditorSection({
 
                   <td className="px-3 py-3 align-top">
                     <div className="flex flex-wrap gap-2 text-m">
-                      <Button
-                        type="button"
-                        variant={row.sex === "male" ? "default" : "outline"}
-                        onClick={() => toggleRowSex(index, "male")}
-                      >
-                        ♂
-                      </Button>
+											<Button
+												type="button"
+												variant={row.sex === "male" ? "default" : "outline"}
+												onClick={() => toggleRowSex(index, "male")}
+												disabled={isSexLockedForRow(row)}
+												title={isSexLockedForRow(row) ? "Sex is inherited from the selected planned subject." : ""}
+											>
+												♂
+											</Button>
 
-                      <Button
-                        type="button"
-                        variant={row.sex === "female" ? "default" : "outline"}
-                        onClick={() => toggleRowSex(index, "female")}
-                      >
-                        ♀
-                      </Button>
+											<Button
+												type="button"
+												variant={row.sex === "female" ? "default" : "outline"}
+												onClick={() => toggleRowSex(index, "female")}
+												disabled={isSexLockedForRow(row)}
+												title={isSexLockedForRow(row) ? "Sex is inherited from the selected planned subject." : ""}
+											>
+												♀
+											</Button>
                     </div>
+										{isSexLockedForRow(row) && (
+											<p className="mt-1 text-xs text-slate-500">
+												Locked from planned subject.
+											</p>
+										)}
                   </td>
 
                   <td className="px-3 py-3 align-top">

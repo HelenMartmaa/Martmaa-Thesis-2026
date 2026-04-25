@@ -110,7 +110,7 @@ function ResultSetDetailsSection({
 
 						{datasetSource === "linked" && (
 							<div className="space-y-2">
-								<Label htmlFor="experimentId">Linked experiment (optional)</Label>
+								<Label htmlFor="experimentId">Linked experiment (required)</Label>
 
 								{loadingExperiments ? (
 									<p className="text-sm text-slate-500">Loading experiments...</p>
