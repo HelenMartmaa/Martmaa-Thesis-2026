@@ -22,6 +22,7 @@ const createEmptyRow = () => ({
   sex: "",
   numericValue: "",
   timepointValue: "",
+	eventOccurred: false,
 });
 
 // Sets character counts for text box fields with max count
@@ -317,7 +318,7 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
                     <tr key={index}>
                       {isLinkedExperiment ? (
                         <>
-													<td className="px-3 py-3 align-top">
+													<td className="px-3 py-3 align-middle">
 														<Input
 															type="number"
 															step="any"
@@ -343,7 +344,7 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
 														/>
 													</td>
 
-													<td className="px-3 py-3 align-top">
+													<td className="px-3 py-3 align-middle">
 														<select
 															value={row.subjectId}
 															onChange={(event) => handleSubjectChange(index, event.target.value)}
@@ -358,7 +359,7 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
 														</select>
 													</td>
 
-													<td className="px-3 py-3 align-top">
+													<td className="px-3 py-3 align-middle">
 														<select
 															value={row.groupId}
 															onChange={(event) => updateRow(index, "groupId", event.target.value)}
@@ -380,7 +381,7 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
                         </>
                       ) : (
                         <>
-                          <td className="px-3 py-3 align-top">
+                          <td className="px-3 py-3 align-middle">
                             <Input
                               value={row.sampleCode}
                               onChange={(event) =>
@@ -390,7 +391,7 @@ function ResultEntriesSection({ resultSetId, experimentId }) {
                             />
                           </td>
 
-                          <td className="px-3 py-3 align-top">
+                          <td className="px-3 py-3 align-middle">
                             <Input
                               value={row.groupLabel}
                               onChange={(event) =>

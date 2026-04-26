@@ -27,6 +27,8 @@ function NewResultSetPage() {
   const errorRef = useRef(null);
   const successRef = useRef(null);
 
+	const [isTimecourseAnalysis, setIsTimecourseAnalysis] = useState(false);
+	const [isSurvivalAnalysis, setIsSurvivalAnalysis] = useState(false);
   const [experiments, setExperiments] = useState([]);
   const [loadingExperiments, setLoadingExperiments] = useState(true);
 
@@ -43,7 +45,6 @@ function NewResultSetPage() {
 
   const [rows, setRows] = useState([createEmptyRow()]);
   const [generalNotes, setGeneralNotes] = useState("");
-  const [isSurvivalAnalysis, setIsSurvivalAnalysis] = useState(false);
 
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -128,55 +129,82 @@ function NewResultSetPage() {
   };
 
   const validateBeforeSave = () => {
-    if (!formData.title.trim()) {
-      return "Result set title is required.";
-    }
-
-		if (datasetSource === "linked" && !formData.experimentId) {
-  		return "Please select linked experiment or choose standalone dataset.";
+		if (!formData.title.trim()) {
+			return "Result set title is required.";
 		}
 
-    if (!formData.experimentType) {
-      return "Experiment type is required.";
-    }
+		if (!formData.experimentType) {
+			return "Experiment type is required.";
+		}
 
-    if (!formData.measurementName.trim()) {
-      return "Measurement name is required.";
-    }
+		if (!formData.measurementName.trim()) {
+			return "Measurement name is required.";
+		}
 
-    if (rows.length === 0) {
-      return "At least one result entry row is required.";
-    }
+		if (rows.length === 0) {
+			return "At least one result entry row is required.";
+		}
 
-    for (const row of rows) {
-      if (isSurvivalAnalysis) {
-        if (row.timepointValue === "" || row.timepointValue === null) {
-          return "Each survival entry must contain a timepoint value.";
-        }
+		for (const row of rows) {
+			if (isSurvivalAnalysis) {
+				if (row.timepointValue === "" || row.timepointValue === null) {
+					return "Each survival entry must contain a timepoint value.";
+				}
 
-        const parsedTimepoint = Number(
-          String(row.timepointValue).replace(/[−–—]/g, "-")
-        );
+				const parsedTimepoint = Number(
+					String(row.timepointValue).replace(/[−–—]/g, "-")
+				);
 
-        if (!Number.isFinite(parsedTimepoint)) {
-          return "Each survival entry must contain a valid timepoint value.";
-        }
-      } else {
-        if (row.numericValue === "" || row.numericValue === null) {
-          return "Each row must contain a numeric value.";
-        }
+				if (!Number.isFinite(parsedTimepoint)) {
+					return "Each survival entry must contain a valid timepoint value.";
+				}
 
-        const normalizedValue = String(row.numericValue).replace(/[−–—]/g, "-");
-        const parsedValue = Number(normalizedValue);
+				continue;
+			}
 
-        if (!Number.isFinite(parsedValue)) {
-          return "Each row must contain a valid numeric value.";
-        }
-      }
-    }
+			if (isTimecourseAnalysis) {
+				if (row.numericValue === "" || row.numericValue === null) {
+					return "Each time-course entry must contain a numeric value.";
+				}
 
-    return "";
-  };
+				if (row.timepointValue === "" || row.timepointValue === null) {
+					return "Each time-course entry must contain a timepoint value.";
+				}
+
+				const parsedNumericValue = Number(
+					String(row.numericValue).replace(/[−–—]/g, "-")
+				);
+
+				const parsedTimepoint = Number(
+					String(row.timepointValue).replace(/[−–—]/g, "-")
+				);
+
+				if (!Number.isFinite(parsedNumericValue)) {
+					return "Each time-course entry must contain a valid numeric value.";
+				}
+
+				if (!Number.isFinite(parsedTimepoint)) {
+					return "Each time-course entry must contain a valid timepoint value.";
+				}
+
+				continue;
+			}
+
+			if (row.numericValue === "" || row.numericValue === null) {
+				return "Each row must contain a numeric value.";
+			}
+
+			const parsedNumericValue = Number(
+				String(row.numericValue).replace(/[−–—]/g, "-")
+			);
+
+			if (!Number.isFinite(parsedNumericValue)) {
+				return "Each row must contain a valid numeric value.";
+			}
+		}
+
+		return "";
+	};
 
   const handleSaveDatasetAndEntries = async () => {
     setError("");
@@ -202,21 +230,18 @@ function NewResultSetPage() {
           sampleCode: !formData.experimentId ? row.sampleCode || null : null,
           groupLabel: !formData.experimentId ? row.groupLabel || null : null,
           sex: row.sex || null,
-          timepointValue: isSurvivalAnalysis
+          timepointValue: isSurvivalAnalysis || isTimecourseAnalysis
             ? Number(String(row.timepointValue).replace(/[−–—]/g, "-"))
             : null,
-          timepointUnit: isSurvivalAnalysis
+          timepointUnit: isSurvivalAnalysis || isTimecourseAnalysis
             ? formData.measurementUnit || null
             : null,
           numericValue: isSurvivalAnalysis
             ? null
             : Number(String(row.numericValue).replace(/[−–—]/g, "-")),
-          eventOccurred: isSurvivalAnalysis
-            ? row.eventOccurred
-              ? 1
-              : 0
-            : null,
+          eventOccurred: isSurvivalAnalysis ? (row.eventOccurred ? 1 : 0) : null,
         };
+				console.log("ENTRY PAYLOAD:", JSON.stringify(payload, null, 2));
 
         await createResultEntryRequest(createdSet.id, payload, token);
       }
@@ -279,15 +304,17 @@ function NewResultSetPage() {
         selectedExperimentTitle={selectedExperimentTitle}
       />
 
-      <ResultEntriesEditorSection
-        experimentId={formData.experimentId}
-        rows={rows}
-        setRows={setRows}
-        generalNotes={generalNotes}
-        setGeneralNotes={setGeneralNotes}
-        isSurvivalAnalysis={isSurvivalAnalysis}
-        setIsSurvivalAnalysis={setIsSurvivalAnalysis}
-      />
+			<ResultEntriesEditorSection
+				experimentId={formData.experimentId}
+				rows={rows}
+				setRows={setRows}
+				generalNotes={generalNotes}
+				setGeneralNotes={setGeneralNotes}
+				isSurvivalAnalysis={isSurvivalAnalysis}
+				setIsSurvivalAnalysis={setIsSurvivalAnalysis}
+				isTimecourseAnalysis={isTimecourseAnalysis}
+				setIsTimecourseAnalysis={setIsTimecourseAnalysis}
+			/>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button

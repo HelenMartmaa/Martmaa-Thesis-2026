@@ -54,6 +54,8 @@ function EditResultSetPage() {
     description: "",
   });
 
+	const [isTimecourseAnalysis, setIsTimecourseAnalysis] = useState(false);
+
   const [rows, setRows] = useState([createEmptyRow()]);
   const [generalNotes, setGeneralNotes] = useState("");
   const [isSurvivalAnalysis, setIsSurvivalAnalysis] = useState(false);
@@ -97,6 +99,25 @@ function EditResultSetPage() {
 
     loadExperiments();
   }, [token]);
+
+	const detectedSurvivalAnalysis = loadedEntries.some(
+		(entry) =>
+			entry.timepointValue !== null &&
+			entry.timepointValue !== undefined &&
+			(entry.eventOccurred === 0 || entry.eventOccurred === 1)
+	);
+
+	const detectedTimecourseAnalysis = loadedEntries.some(
+		(entry) =>
+			entry.numericValue !== null &&
+			entry.numericValue !== undefined &&
+			entry.timepointValue !== null &&
+			entry.timepointValue !== undefined &&
+			entry.eventOccurred === null
+	);
+
+	setIsSurvivalAnalysis(detectedSurvivalAnalysis);
+	setIsTimecourseAnalysis(detectedTimecourseAnalysis);
 
 	const selectedExperiment = useMemo(() => {
 		return experiments.find(
@@ -263,10 +284,10 @@ function EditResultSetPage() {
           sampleCode: !formData.experimentId ? row.sampleCode || null : null,
           groupLabel: !formData.experimentId ? row.groupLabel || null : null,
           sex: row.sex || null,
-          timepointValue: isSurvivalAnalysis
+          timepointValue: isSurvivalAnalysis || isTimecourseAnalysis
             ? Number(String(row.timepointValue).replace(/[−–—]/g, "-"))
             : null,
-          timepointUnit: isSurvivalAnalysis
+          timepointUnit: isSurvivalAnalysis || isTimecourseAnalysis
             ? formData.measurementUnit || null
             : null,
           numericValue: isSurvivalAnalysis
@@ -399,6 +420,8 @@ function EditResultSetPage() {
             setGeneralNotes={setGeneralNotes}
             isSurvivalAnalysis={isSurvivalAnalysis}
             setIsSurvivalAnalysis={setIsSurvivalAnalysis}
+						isTimecourseAnalysis={isTimecourseAnalysis}
+						setIsTimecourseAnalysis={setIsTimecourseAnalysis}
           />
 
           <div className="flex flex-col gap-3 sm:flex-row">

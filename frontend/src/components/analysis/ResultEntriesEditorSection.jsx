@@ -15,6 +15,8 @@ function ResultEntriesEditorSection({
   setGeneralNotes,
   isSurvivalAnalysis,
   setIsSurvivalAnalysis,
+	isTimecourseAnalysis,
+	setIsTimecourseAnalysis,
 }) {
   const { token } = useAuth();
 
@@ -188,6 +190,25 @@ function ResultEntriesEditorSection({
     updateRow(index, "timepointValue", value);
   };
 
+/* 	const handleTimepointValueChange = (index, rawValue) => {
+		let value = rawValue.replace(/[−–—]/g, "-");
+		value = value.replace(/[^0-9.-]/g, "");
+
+		const isNegative = value.startsWith("-");
+		value = value.replace(/-/g, "");
+
+		const parts = value.split(".");
+		value = parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
+
+		if (isNegative) {
+			value = "-" + value;
+		}
+
+		value = value.slice(0, 12);
+
+		updateRow(index, "timepointValue", value);
+	}; */
+
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader>
@@ -210,13 +231,38 @@ function ResultEntriesEditorSection({
             <input
               type="checkbox"
               checked={isSurvivalAnalysis}
-              onChange={(event) => setIsSurvivalAnalysis(event.target.checked)}
+              onChange={(event) => {
+								const checked = event.target.checked;
+
+								setIsSurvivalAnalysis(checked);
+
+								if (checked) {
+									setIsTimecourseAnalysis(false);
+								}
+							}}
             />
             Survival/event analysis
           </label>
+					<label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+						<input
+							type="checkbox"
+							checked={isTimecourseAnalysis}
+							onChange={(event) => {
+								const checked = event.target.checked;
+
+								setIsTimecourseAnalysis(checked);
+
+								if (checked) {
+									setIsSurvivalAnalysis(false);
+								}
+							}}
+						/>
+						Time-course/growth analysis
+					</label>
+					
           <p className="text-xs text-slate-500">
-            Enable this if the table should collect Kaplan-Meier style survival
-            data instead of standard numeric values.
+            Enable survival/event analysis if the table should collect Kaplan-Meier style survival
+            data instead of standard numeric values. Enable time-course/growth analysis if the table should collect data for doubling time and growth rate.
           </p>
         </div>
 
@@ -224,18 +270,19 @@ function ResultEntriesEditorSection({
           <table className="min-w-full text-sm">
             <thead className="bg-slate-100 text-slate-700">
               <tr>
-                {isSurvivalAnalysis ? (
-                  <>
-                    <th className="px-3 py-3 text-left font-medium">
-                      Event occurred
-                    </th>
-                    <th className="px-3 py-3 text-left font-medium">
-                      Timepoint value
-                    </th>
-                  </>
-                ) : (
-                  <th className="px-3 py-3 text-left font-medium">Value</th>
-                )}
+								{isSurvivalAnalysis ? (
+									<>
+										<th>Event occurred</th>
+										<th>Timepoint value</th>
+									</>
+								) : isTimecourseAnalysis ? (
+									<>
+										<th>Value</th>
+										<th>Timepoint value</th>
+									</>
+								) : (
+									<th>Value</th>
+								)}
 
                 {isLinkedExperiment ? (
                   <>
@@ -261,55 +308,80 @@ function ResultEntriesEditorSection({
             <tbody className="divide-y divide-slate-200 bg-white">
               {rows.map((row, index) => (
                 <tr key={index}>
-                  {isSurvivalAnalysis ? (
-                    <>
-                      <td className="px-3 py-3 align-top">
-                        <label className="flex items-center gap-2 text-sm text-slate-700">
-                          <input
-                            type="checkbox"
-                            checked={Boolean(row.eventOccurred)}
-                            onChange={(event) =>
-                              updateRow(index, "eventOccurred", event.target.checked)
-                            }
-                          />
-                        </label>
-                      </td>
+									{isSurvivalAnalysis ? (
+										<>
+											<td className="px-3 py-3 align-middle">
+												<input
+													className="flex mx-auto items-center gap-2 text-sm text-slate-700"
+													type="checkbox"
+													checked={Boolean(row.eventOccurred)}
+													onChange={(event) =>
+														updateRow(index, "eventOccurred", event.target.checked)
+													}
+												/>
+											</td>
 
-                      <td className="px-3 py-3 align-top">
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={row.timepointValue}
-                          onChange={(event) =>
-                            handleTimepointValueChange(index, event.target.value)
-                          }
-                          placeholder="Enter timepoint"
-                        />
-                      </td>
-                    </>
-                  ) : (
-                    <td className="px-3 py-3 align-top">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={row.numericValue}
-                        onChange={(event) =>
-                          handleNumericValueChange(index, event.target.value)
-                        }
-                        placeholder="Enter value"
-                      />
-                    </td>
-                  )}
+											<td className="px-3 py-3 align-middle">
+												<Input
+													type="text"
+													inputMode="decimal"
+													value={row.timepointValue}
+													onChange={(event) =>
+														handleTimepointValueChange(index, event.target.value)
+													}
+													placeholder="Enter timepoint"
+												/>
+											</td>
+										</>
+									) : isTimecourseAnalysis ? (
+										<>
+											<td className="px-3 py-3 align-middle">
+												<Input
+													type="text"
+													inputMode="decimal"
+													value={row.numericValue}
+													onChange={(event) =>
+														handleNumericValueChange(index, event.target.value)
+													}
+													placeholder="Enter value"
+												/>
+											</td>
+
+											<td className="px-3 py-3 align-middle">
+												<Input
+													type="text"
+													inputMode="decimal"
+													value={row.timepointValue}
+													onChange={(event) =>
+														handleTimepointValueChange(index, event.target.value)
+													}
+													placeholder="Enter timepoint"
+												/>
+											</td>
+										</>
+									) : (
+										<td className="px-3 py-3 align-middle">
+											<Input
+												type="text"
+												inputMode="decimal"
+												value={row.numericValue}
+												onChange={(event) =>
+													handleNumericValueChange(index, event.target.value)
+												}
+												placeholder="Enter value"
+											/>
+										</td>
+									)}
 
                   {isLinkedExperiment ? (
                     <>
-                      <td className="px-3 py-3 align-top">
+                      <td className="px-3 py-3 align-middle">
                         <select
                           value={row.subjectId}
                           onChange={(event) =>
                             handleSubjectChange(index, event.target.value)
                           }
-                          className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                          className="flex mx-auto align-middle h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                         >
                           <option value="">No subject selected</option>
                           {getSelectableSubjectsForRow(row).map((subject) => (
@@ -320,7 +392,7 @@ function ResultEntriesEditorSection({
                         </select>
                       </td>
 
-                      <td className="px-3 py-3 align-top">
+                      <td className="px-3 py-3 align-middle">
                         <select
                           value={row.groupId}
                           onChange={(event) =>
@@ -346,7 +418,7 @@ function ResultEntriesEditorSection({
                     </>
                   ) : (
                     <>
-                      <td className="px-3 py-3 align-top">
+                      <td className="px-3 py-3 align-middle">
                         <Input
                           value={row.sampleCode}
                           onChange={(event) =>
@@ -356,7 +428,7 @@ function ResultEntriesEditorSection({
                         />
                       </td>
 
-                      <td className="px-3 py-3 align-top">
+                      <td className="px-3 py-3 align-middle">
                         <Input
                           value={row.groupLabel}
                           onChange={(event) =>
@@ -397,7 +469,7 @@ function ResultEntriesEditorSection({
 										)}
                   </td>
 
-                  <td className="px-3 py-3 align-top">
+                  <td className="px-3 py-3 align-middle">
                     <Button
                       type="button"
                       variant="destructive"
