@@ -1,10 +1,12 @@
 import {
   createExperimentService,
   getUserExperimentsService,
-	getExperimentByIdService,
+  getExperimentByIdService,
   updateExperimentService,
+  updateExperimentNotesService,
   deleteExperimentService,
 } from "../services/experiment.service.js";
+import { hasLockedAnalysisForExperiment } from "../repositories/experiment.repository.js";
 
 // Handles request for creating a new experiment
 const createExperimentController = async (req, res) => {
@@ -61,6 +63,26 @@ const getExperimentByIdController = async (req, res) => {
 // Handles request for updating one experiment by id
 const updateExperimentController = async (req, res) => {
   try {
+    const locked = await hasLockedAnalysisForExperiment(
+      req.params.id,
+      req.user.userId
+    );
+
+    if (locked) {
+      const experiment = await updateExperimentNotesService({
+        experimentId: req.params.id,
+        userId: req.user.userId,
+        notes: req.body.notes,
+      });
+
+      return res.status(200).json({
+        message:
+          "Only general notes were updated because this experiment is linked to an analyzed dataset.",
+        experiment,
+        limitedEdit: true,
+      });
+    }
+
     const experiment = await updateExperimentService({
       experimentId: req.params.id,
       userId: req.user.userId,
@@ -70,6 +92,7 @@ const updateExperimentController = async (req, res) => {
     return res.status(200).json({
       message: "Experiment updated successfully.",
       experiment,
+      limitedEdit: false,
     });
   } catch (error) {
     return res.status(400).json({

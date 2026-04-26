@@ -109,6 +109,18 @@ function ExperimentDetailPage() {
     }
   }, [showDeleteConfirm]);
 
+  const linkedAnalysisCount =
+    experiment?.resultSets?.reduce(
+      (sum, resultSet) =>
+        sum +
+        (resultSet.statisticalAnalyses?.length ||
+          resultSet.analyses?.length ||
+          0),
+      0
+    ) || 0;
+
+  const isExperimentLocked = linkedAnalysisCount > 0;
+
   return (
     <section className="space-y-6">
       {/* Secondary navigation back to saved experiments list */}
@@ -117,6 +129,16 @@ function ExperimentDetailPage() {
           <Link to="/planning/saved">⮜ Back to experiments list</Link>
         </Button>
       </div>
+
+      {isExperimentLocked && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="font-medium">Experiment partially locked</p>
+          <p className="mt-1">
+            This experiment is linked to result data that has already been used in a
+            saved statistical analysis. Only General notes and team members can be edited.
+          </p>
+        </div>
+      )}
 
       <div className="mb-8 space-y-3">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -284,11 +306,13 @@ function ExperimentDetailPage() {
           <ExperimentGroupsSection
             experimentId={id}
             groups={groups}
+            isExperimentLocked={isExperimentLocked}
             setGroups={setGroups}
           />
           <ExperimentSubjectsSection
             experimentId={id}
             groups={groups}
+            isExperimentLocked={isExperimentLocked}
           />
 
           <div className="mb-8 space-y-3">

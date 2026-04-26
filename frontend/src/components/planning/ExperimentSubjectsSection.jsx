@@ -21,7 +21,7 @@ function CharacterCount({ current, max }) {
 }
 
 // Displays and manages experiment subjects
-function ExperimentSubjectsSection({ experimentId, groups = [] }) {
+function ExperimentSubjectsSection({ experimentId, groups = [], isExperimentLocked = false }) {
   const { token } = useAuth();
 
   const [subjectCodeError, setSubjectCodeError] = useState("");
@@ -375,23 +375,25 @@ function ExperimentSubjectsSection({ experimentId, groups = [] }) {
             )}
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => startEditing(subject)}
-            >
-              Update
-            </Button>
+					{!isExperimentLocked && (
+						<div className="flex flex-col gap-3 sm:flex-row">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => startEditing(subject)}
+							>
+								Update
+							</Button>
 
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => handleDelete(subject.id)}
-            >
-              Delete
-            </Button>
-          </div>
+							<Button
+								type="button"
+								variant="destructive"
+								onClick={() => handleDelete(subject.id)}
+							>
+								Delete
+							</Button>
+						</div>
+					)}
         </div>
       )}
     </div>
@@ -403,6 +405,12 @@ function ExperimentSubjectsSection({ experimentId, groups = [] }) {
         <CardTitle>Experiment Subjects</CardTitle>
       </CardHeader>
 
+			{isExperimentLocked && (
+				<div className="max-w-2xl mx-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+					Subjects are locked because this experiment is linked to analyzed result data.
+				</div>
+			)}
+
       <CardContent className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
@@ -410,9 +418,11 @@ function ExperimentSubjectsSection({ experimentId, groups = [] }) {
             the existing groups.
           </p>
 
-          <Button type="button" onClick={() => setShowForm((prev) => !prev)}>
-            {showForm ? "Close form" : "Add new subject"}
-          </Button>
+          {!isExperimentLocked && (
+						<Button type="submit" onClick={() => setShowForm((prev) => !prev)}>
+							{showForm ? "Close form" : "Add subject"}
+						</Button>
+					)}
         </div>
 
         {showForm && (

@@ -13,6 +13,7 @@ function NewExperimentForm({
   initialData = null,
   experimentId = null,
   onSuccess = null,
+	isExperimentLocked = false,
 }) {
   const { token } = useAuth();
 
@@ -187,6 +188,32 @@ function NewExperimentForm({
 		setError("");
 		setSuccessMessage("");
 
+		if (mode === "edit" && isExperimentLocked) {
+			try {
+				setIsSubmitting(true);
+
+				await updateExperimentRequest(
+					experimentId,
+					{
+						notes: formData.notes,
+					},
+					token
+				);
+
+				setSuccessMessage("General notes updated successfully.");
+
+				if (onSuccess) {
+					onSuccess();
+				}
+			} catch (err) {
+				setError(err.response?.data?.error || "Failed to update general notes.");
+			} finally {
+				setIsSubmitting(false);
+			}
+
+			return;
+		}
+
 		const cleanedHypotheses = formData.hypotheses
 			.map((item) => item.trim())
 			.filter((item) => item.length > 0);
@@ -294,6 +321,7 @@ function NewExperimentForm({
 								name="title"
 								value={formData.title}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={255}
 								placeholder="Enter experiment title"
 								required
@@ -310,6 +338,7 @@ function NewExperimentForm({
 								name="description"
 								value={formData.description}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={1000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Provide a short scientific description of the experiment"
@@ -327,6 +356,7 @@ function NewExperimentForm({
 								name="aim"
 								value={formData.aim}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={1000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="State the aim of this experiment and research question(s)"
@@ -346,6 +376,7 @@ function NewExperimentForm({
 										<textarea
 											value={hypothesis}
 											onChange={(event) => handleHypothesisChange(index, event.target.value)}
+											disabled={isExperimentLocked}
 											maxLength={500}
 											className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 											placeholder={`Hypothesis ${index + 1}`}
@@ -358,6 +389,7 @@ function NewExperimentForm({
 												type="button"
 												variant="outline"
 												onClick={() => removeHypothesisField(index)}
+												disabled={isExperimentLocked}
 											>
 												Remove hypothesis
 											</Button>
@@ -366,7 +398,7 @@ function NewExperimentForm({
 								))}
 							</div>
 
-							<Button type="button" variant="secondary" onClick={addHypothesisField}>
+							<Button type="button" variant="secondary" onClick={addHypothesisField} disabled={isExperimentLocked}>
 								Add hypothesis
 							</Button>
 						</div>
@@ -384,6 +416,7 @@ function NewExperimentForm({
 										aria-label="Experiment type is in vivo"
 										checked={formData.experimentType === "in_vivo"}
 										onChange={handleChange}
+										disabled={isExperimentLocked}
 									/>
 									<i>in vivo</i>
 								</label>
@@ -396,6 +429,7 @@ function NewExperimentForm({
 										aria-label="Experiment type is in vitro"
 										checked={formData.experimentType === "in_vitro"}
 										onChange={handleChange}
+										disabled={isExperimentLocked}
 									/>
 									<i>in vitro</i>
 								</label>
@@ -421,6 +455,7 @@ function NewExperimentForm({
 										value="yes"
 										checked={formData.completed === "yes"}
 										onChange={handleChange}
+										disabled={isExperimentLocked}
 										required
 									/>
 									Yes
@@ -433,6 +468,7 @@ function NewExperimentForm({
 										value="no"
 										checked={formData.completed === "no"}
 										onChange={handleChange}
+										disabled={isExperimentLocked}
 										required
 									/>
 									No
@@ -449,6 +485,7 @@ function NewExperimentForm({
 								name="organismName"
 								value={formData.organismName}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								placeholder="Example: Mus musculus / E. coli / protein name"
 								required
 							/>
@@ -466,6 +503,7 @@ function NewExperimentForm({
 									type="date"
 									value={formData.startDate}
 									onChange={handleChange}
+									disabled={isExperimentLocked}
 									aria-invalid={Boolean(startDateError)}
 									aria-describedby={startDateError ? "start-date-error" : undefined}
 								/>
@@ -488,6 +526,7 @@ function NewExperimentForm({
 									type="date"
 									value={formData.endDate}
 									onChange={handleChange}
+									disabled={isExperimentLocked}
 									aria-invalid={Boolean(endDateError)}
 									aria-describedby={endDateError ? "end-date-error" : undefined}
 								/>
@@ -509,6 +548,7 @@ function NewExperimentForm({
 								name="scheduleNotes"
 								value={formData.scheduleNotes}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={1000}
 								className="min-h-25 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Add scheduling details or timing notes"
@@ -525,6 +565,7 @@ function NewExperimentForm({
 								name="methodsText"
 								value={formData.methodsText}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={2000}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe the methods used in the experiment"
@@ -542,6 +583,7 @@ function NewExperimentForm({
 								name="resourcesText"
 								value={formData.resourcesText}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={1500}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe materials and resources needed"
@@ -558,6 +600,7 @@ function NewExperimentForm({
 								name="treatmentPlanText"
 								value={formData.treatmentPlanText}
 								onChange={handleChange}
+								disabled={isExperimentLocked}
 								maxLength={1500}
 								className="min-h-30 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
 								placeholder="Describe treatment or intervention details"
@@ -583,13 +626,15 @@ function NewExperimentForm({
 
 						<div className="flex flex-col gap-3 sm:flex-row">
 							<Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
-								{isSubmitting 
+								{isSubmitting
 									? mode === "edit"
-										? "Updating..." 
-										: "Saving ..."
+										? "Updating..."
+										: "Saving..."
 									: mode === "edit"
-									? "Update Experiment"
-									: "Create Experiment"}
+										? isExperimentLocked
+											? "Save General Notes"
+											: "Update Experiment"
+										: "Create Experiment"}
 							</Button>
 
 							<Button
@@ -597,6 +642,7 @@ function NewExperimentForm({
 								variant="outline"
 								className="w-full sm:w-auto"
 								onClick={() => resetForm()}
+								disabled={isExperimentLocked}
 							>
 								Clear form
 							</Button>

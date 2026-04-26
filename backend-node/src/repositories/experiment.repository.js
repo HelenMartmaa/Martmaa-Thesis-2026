@@ -60,14 +60,39 @@ const getExperimentsByUserId = async (userId) => {
 };
 
 // Returns one experiment by its id and owner user id
-const getExperimentByIdAndUserId = async (experimentId, userId) => {
+const getExperimentByIdAndUserId = async (id, userId) => {
   return prisma.experiment.findFirst({
     where: {
-      id: experimentId,
-      userId,
+      id: Number(id),
+      userId: Number(userId),
     },
     include: {
       hypotheses: true,
+
+      groups: {
+        orderBy: {
+          id: "asc",
+        },
+      },
+
+      subjects: {
+        include: {
+          group: true,
+        },
+        orderBy: {
+          id: "asc",
+        },
+      },
+
+      resultSets: {
+        include: {
+          statisticalAnalyses: {
+            select: {
+              id: true,
+            },
+          },
+        },
+      },
     },
   });
 };
@@ -154,4 +179,39 @@ const deleteExperimentByIdAndUserId = async (experimentId, userId) => {
   });
 };
 
-export { createExperiment, getExperimentsByUserId, getExperimentByIdAndUserId, updateExperimentByIdAndUserId, deleteExperimentByIdAndUserId };
+// For restricting updating experiment linked to saved analysis
+const hasLockedAnalysisForExperiment = async (experimentId, userId) => {
+  const count = await prisma.statisticalAnalysis.count({
+    where: {
+      userId: Number(userId),
+      resultSet: {
+        experimentId: Number(experimentId),
+      },
+    },
+  });
+
+  return count > 0;
+};
+
+// Only general notes section can be updated in experiment linked with saved analysis 
+const updateExperimentNotesById = async (experimentId, userId, notes) => {
+  return prisma.experiment.update({
+    where: {
+      id: Number(experimentId),
+      userId: Number(userId),
+    },
+    data: {
+      notes: notes?.trim() || null,
+    },
+  });
+};
+
+export { 
+  createExperiment, 
+  getExperimentsByUserId, 
+  getExperimentByIdAndUserId, 
+  updateExperimentByIdAndUserId, 
+  deleteExperimentByIdAndUserId,
+  hasLockedAnalysisForExperiment,
+  updateExperimentNotesById
+};

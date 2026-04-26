@@ -4,6 +4,8 @@ import {
   getExperimentByIdAndUserId,
   updateExperimentByIdAndUserId,
   deleteExperimentByIdAndUserId,
+  hasLockedAnalysisForExperiment,
+  updateExperimentNotesById,
 } from "../repositories/experiment.repository.js";
 
 // Validates and creates a new experiment
@@ -213,4 +215,23 @@ const deleteExperimentService = async (experimentId, userId) => {
   return deleteExperimentByIdAndUserId(parsedId, userId);
 };
 
-export { createExperimentService, getUserExperimentsService, getExperimentByIdService, updateExperimentService, deleteExperimentService };
+// Only notes updating in limited updating mode
+const updateExperimentNotesService = async ({ experimentId, userId, notes }) => {
+  const parsedExperimentId = Number(experimentId);
+
+  if (!parsedExperimentId || Number.isNaN(parsedExperimentId)) {
+    throw new Error("Invalid experiment id.");
+  }
+
+  return updateExperimentNotesById(parsedExperimentId, userId, notes);
+};
+
+
+export { 
+  createExperimentService, 
+  getUserExperimentsService, 
+  getExperimentByIdService, 
+  updateExperimentService, 
+  deleteExperimentService,
+  updateExperimentNotesService
+};

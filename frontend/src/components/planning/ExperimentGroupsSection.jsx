@@ -21,7 +21,7 @@ function CharacterCount({ current, max }) {
 }
 
 // Displays and adds experiment groups
-function ExperimentGroupsSection({ experimentId, groups, setGroups }) {
+function ExperimentGroupsSection({ experimentId, groups, setGroups, isExperimentLocked = false }) {
   const { token } = useAuth();
 
   const [showForm, setShowForm] = useState(false);
@@ -200,15 +200,23 @@ function ExperimentGroupsSection({ experimentId, groups, setGroups }) {
         <CardTitle>Experiment Groups</CardTitle>
       </CardHeader>
 
+			{isExperimentLocked && (
+				<div className="max-w-2xl mx-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+					Groups are locked because this experiment is linked to analyzed result data.
+				</div>
+			)}
+
       <CardContent className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             Define subject groups first if the subjects need to be assigned to one of these groups.
           </p>
 
-          <Button type="button" onClick={() => setShowForm((prev) => !prev)}>
-            {showForm ? "Close form" : "Add new group"}
-          </Button>
+          {!isExperimentLocked && (
+						<Button type="submit" onClick={() => setShowForm((prev) => !prev)}>
+							{showForm ? "Close form" : "Add new group"}
+						</Button>
+					)}
         </div>
         {showForm && (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -392,7 +400,33 @@ function ExperimentGroupsSection({ experimentId, groups, setGroups }) {
                     )}
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
+									{!isExperimentLocked && (
+										<Button type="button" onClick={() => setShowForm((prev) => !prev)}>
+											{showForm ? "Close form" : "Add new group"}
+										</Button>
+									)}
+
+									{!isExperimentLocked && (
+										<div className="flex flex-col gap-3 sm:flex-row">
+											<Button
+												type="button"
+												variant="outline"
+												onClick={() => startEditing(group)}
+											>
+												Update
+											</Button>
+
+											<Button
+												type="button"
+												variant="destructive"
+												onClick={() => handleDelete(group.id)}
+											>
+												Delete
+											</Button>
+										</div>
+									)}
+
+{/*                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Button
                       type="button"
                       variant="outline"
@@ -408,7 +442,7 @@ function ExperimentGroupsSection({ experimentId, groups, setGroups }) {
                     >
                       Delete
                     </Button>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </div>

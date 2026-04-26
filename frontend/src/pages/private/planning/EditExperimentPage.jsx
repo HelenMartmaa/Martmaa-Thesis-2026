@@ -31,6 +31,18 @@ function EditExperimentPage() {
     loadExperiment();
   }, [id, token]);
 
+  const linkedAnalysisCount =
+    experiment?.resultSets?.reduce(
+      (sum, ds) =>
+        sum +
+        (ds.statisticalAnalyses?.length ||
+          ds.analyses?.length ||
+          0),
+      0
+    ) || 0;
+
+  const isExperimentLocked = linkedAnalysisCount > 0;
+
   return (
     <section className="space-y-6">
       <div>
@@ -56,11 +68,22 @@ function EditExperimentPage() {
         </div>
       )}
 
+      {isExperimentLocked && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="font-medium">Limited editing mode</p>
+          <p className="mt-1">
+            This experiment is linked to a result dataset that has already been used
+            in a saved statistical analysis. Only General notes can be changed.
+          </p>
+        </div>
+      )}
+
       {!loading && !error && experiment && (
         <NewExperimentForm
           mode="edit"
           experimentId={id}
           initialData={experiment}
+          isExperimentLocked={isExperimentLocked}
           onSuccess={() => navigate(`/planning/${id}`)}
         />
       )}
