@@ -6,6 +6,22 @@ import {
   deleteResultEntryById,
 } from "../repositories/resultEntry.repository.js";
 import { getResultSetByIdAndUserId } from "../repositories/resultSet.repository.js";
+import { countStatisticalAnalysesByResultSetId } from "../repositories/statisticalAnalysis.repository.js";
+
+// Preventing update of datasets that are already linked to saved analyses
+const preventEntryChangesIfAnalyzed = async (resultSetId, userId) => {
+  const relatedAnalysisCount = await countStatisticalAnalysesByResultSetId(
+    resultSetId,
+    userId
+  );
+
+  if (relatedAnalysisCount > 0) {
+    throw new Error(
+      "This result dataset is already used in a saved statistical analysis and its entries can no longer be changed."
+    );
+  }
+};
+
 // Validates and creates a new result entry
 const createResultEntryService = async ({
   resultSetId,
@@ -24,10 +40,14 @@ const createResultEntryService = async ({
   if (!parsedResultSetId || Number.isNaN(parsedResultSetId)) {
     throw new Error("Invalid result set id.");
   }
+
   const resultSet = await getResultSetByIdAndUserId(parsedResultSetId, userId);
   if (!resultSet) {
     throw new Error("Result set not found.");
   }
+
+	await preventEntryChangesIfAnalyzed(parsedResultSetId, userId);
+
   const parsedTimepointValue =
     timepointValue !== undefined &&
     timepointValue !== null &&
@@ -78,6 +98,7 @@ const createResultEntryService = async ({
     eventOccurred: parsedEventOccurred,
   });
 };
+
 // Returns all entries for one result set
 const getResultEntriesService = async ({ resultSetId, userId }) => {
   const parsedResultSetId = Number(resultSetId);
@@ -123,6 +144,9 @@ const updateResultEntryService = async ({
   if (!existingEntry || existingEntry.resultSetId !== parsedResultSetId) {
     throw new Error("Result entry not found.");
   }
+
+	await preventEntryChangesIfAnalyzed(parsedResultSetId, userId);
+
   const parsedTimepointValue =
     timepointValue !== undefined &&
     timepointValue !== null &&
@@ -193,6 +217,9 @@ const deleteResultEntryService = async ({ resultSetId, entryId, userId }) => {
   if (!existingEntry || existingEntry.resultSetId !== parsedResultSetId) {
     throw new Error("Result entry not found.");
   }
+
+	await preventEntryChangesIfAnalyzed(parsedResultSetId, userId);
+
   return deleteResultEntryById(parsedEntryId);
 };
 export {

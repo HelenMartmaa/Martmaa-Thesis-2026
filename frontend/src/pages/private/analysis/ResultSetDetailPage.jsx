@@ -171,7 +171,13 @@ function ResultSetDetailPage() {
               )}
             </CardContent>
           </Card>
-
+					<div className="flex flex-col gap-3 sm:flex-row">          
+						<Button asChild className="border-emerald-200 bg-emerald-100 hover:bg-emerald-200 text-slate-900">
+							<Link to={`/analysis/result-sets/${id}/run-analysis`}>
+								Run Statistical Analysis
+							</Link>
+						</Button>
+          </div>
 					<ResultEntriesTable
 						entries={entries}
 						isLinkedExperiment={Boolean(resultSet.experimentId)}
@@ -232,7 +238,7 @@ function ResultSetDetailPage() {
           <div className="flex flex-col gap-3 sm:flex-row">          
             <Button asChild variant="outline">
               <Link to={`/analysis/result-sets/${id}/edit`}>
-                Update Result Set
+                Update Dataset
               </Link>
             </Button>
 
@@ -241,14 +247,8 @@ function ResultSetDetailPage() {
               variant="destructive"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              Delete Result Set
+              Delete Dataset
             </Button>
-
-						<Button asChild className="border-emerald-200 bg-emerald-100 text-slate-900">
-							<Link to={`/analysis/result-sets/${id}/run-analysis`}>
-								Run Statistical Analysis
-							</Link>
-						</Button>
           </div>
         </div>
       )}

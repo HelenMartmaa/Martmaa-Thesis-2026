@@ -6,6 +6,7 @@ import {
   deleteResultSetById
 } from "../repositories/resultSet.repository.js";
 import { getExperimentByIdAndUserId } from "../repositories/experiment.repository.js";
+import { countStatisticalAnalysesByResultSetId } from "../repositories/statisticalAnalysis.repository.js";
 
 // Validates and creates a new result set
 const createResultSetService = async ({
@@ -103,6 +104,7 @@ const updateResultSetService = async ({
   description,
 }) => {
   const parsedResultSetId = Number(resultSetId);
+	const existingResultSet = await getResultSetByIdAndUserId(parsedResultSetId, userId);
 
 	if (existingResultSet.experimentId) {
 		const linkedExperiment = await getExperimentByIdAndUserId(
@@ -117,11 +119,20 @@ const updateResultSetService = async ({
     throw new Error("Invalid result set id.");
   }
 
-  const existingResultSet = await getResultSetByIdAndUserId(parsedResultSetId, userId);
-
   if (!existingResultSet) {
     throw new Error("Result set not found.");
   }
+
+	const relatedAnalysisCount = await countStatisticalAnalysesByResultSetId(
+		parsedResultSetId,
+		userId
+	);
+
+	if (relatedAnalysisCount > 0) {
+		throw new Error(
+			"This result dataset is already used in a saved statistical analysis and can no longer be updated."
+		);
+	}
 
   const trimmedTitle = title?.trim();
   const normalizedExperimentType = experimentType?.trim();

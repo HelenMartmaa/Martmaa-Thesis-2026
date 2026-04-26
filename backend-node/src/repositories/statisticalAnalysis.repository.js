@@ -67,6 +67,16 @@ const getStatisticalAnalysisByIdAndUserId = async (analysisId, userId) => {
   });
 };
 
+// Checking if result dataset is already linked to saved analysis.
+const countStatisticalAnalysesByResultSetId = async (resultSetId, userId) => {
+  return prisma.statisticalAnalysis.count({
+    where: {
+      resultSetId: Number(resultSetId),
+      userId: Number(userId),
+    },
+  });
+};
+
 // Deletes one analysis
 const deleteStatisticalAnalysisById = async (analysisId) => {
   return prisma.statisticalAnalysis.delete({
@@ -79,4 +89,5 @@ export {
   getStatisticalAnalysesByUserId,
   getStatisticalAnalysisByIdAndUserId,
   deleteStatisticalAnalysisById,
+	countStatisticalAnalysesByResultSetId
 };

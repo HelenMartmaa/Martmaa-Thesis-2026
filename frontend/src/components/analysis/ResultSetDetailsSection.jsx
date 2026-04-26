@@ -6,7 +6,7 @@ function FieldRequirement({ required }) {
   return (
     <span className="text-slate-500">
       {" "}
-      ({required ? "required" : "optional"})
+      ({required ? "Required" : "Optional"})
     </span>
   );
 }
@@ -147,6 +147,20 @@ function ResultSetDetailsSection({
                 required
               />
             </div>
+
+{/* 				Preventing update of datasets that are already linked to saved analyses */}
+{/* 						const preventEntryChangesIfAnalyzed = async (resultSetId, userId) => {
+							const relatedAnalysisCount = await countStatisticalAnalysesByResultSetId(
+								resultSetId,
+								userId
+							);
+
+							if (relatedAnalysisCount > 0) {
+								throw new Error(
+									"This result dataset is already used in a saved statistical analysis and its entries can no longer be changed."
+								);
+							}
+						}; */}
 
 						<div className="space-y-3">
 							<Label>

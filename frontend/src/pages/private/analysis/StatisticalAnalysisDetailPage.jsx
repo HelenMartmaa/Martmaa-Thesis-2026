@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
 import { deleteStatisticalAnalysisRequest, getStatisticalAnalysisByIdRequest } from "../../../features/analysis/statisticalAnalysisApi";
+import AnalysisChartsSection from "../../../components/analysis/AnalysisChartsSection";
 import ResultEntriesTable from "../../../components/analysis/ResultEntriesTable";
 import { Button } from "../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
@@ -11,9 +12,17 @@ const METRIC_LABELS = {
   mean: "Arithmetic mean",
   median: "Median",
   standardDeviation: "Standard deviation",
+	standard_deviation: "Standard deviation",
   variance: "Variance",
   standardError: "Standard error",
+	standard_error: "Standard error",
   range: "Range",
+	growthRate: "Growth rate",
+	growth_rate: "Growth rate",
+	doublingTime: "Doubling Time",
+	doubling_time: "Doubling Time",
+	kaplanMeier: "Kaplan-Meier survival curve",
+	kaplan_meier: "Kaplan-Meier survival curve",
 };
 
 const TEST_LABELS = {
@@ -619,6 +628,14 @@ function StatisticalAnalysisDetailPage() {
 							)}
 						</CardContent>
           </Card>
+
+					{parsedResults?.chartData && (
+						<AnalysisChartsSection
+							chartData={parsedResults.chartData}
+							measurementName={analysis.resultSet?.measurementName}
+							measurementUnit={analysis.resultSet?.measurementUnit}
+						/>
+					)}
 
 					{showDeleteConfirm && (
 						<div
