@@ -91,6 +91,13 @@ function ResultSetDetailPage() {
     }
   };
 
+	const relatedAnalysisCount =
+		resultSet?.statisticalAnalyses?.length ||
+		resultSet?.analyses?.length ||
+		0;
+
+	const isDatasetLocked = relatedAnalysisCount > 0;
+
   return (
     <section className="space-y-6">
       <div>
@@ -235,12 +242,27 @@ function ResultSetDetailPage() {
 							</Button>
 						)}
           </div> */}
+						{isDatasetLocked ? (
+							<div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+								<p className="font-medium">Dataset locked</p>
+								<p className="mt-1">
+									This dataset has already been used in a saved statistical analysis and can
+									no longer be edited.
+								</p>
+							</div>
+						) : (
+							""
+						)}
+						
           <div className="flex flex-col gap-3 sm:flex-row">          
-            <Button asChild variant="outline">
-              <Link to={`/analysis/result-sets/${id}/edit`}>
-                Update Dataset
-              </Link>
-            </Button>
+						{isDatasetLocked ? ( ""
+						) : (
+							<Button asChild>
+								<Link to={`/analysis/result-sets/${id}/edit`}>
+									Update Dataset
+								</Link>
+							</Button>
+						)}
 
             <Button
               type="button"

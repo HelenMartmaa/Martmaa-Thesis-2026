@@ -5,6 +5,7 @@ import {
   updateResultSetService,
   deleteResultSetService
 } from "../services/resultSet.service.js";
+import { hasLockedAnalysisForResultSet } from "../repositories/resultSet.repository.js";
 
 // Handles request for creating a new result set
 const createResultSetController = async (req, res) => {
@@ -60,6 +61,18 @@ const getResultSetByIdController = async (req, res) => {
 
 // Handles request for updating one result set
 const updateResultSetController = async (req, res) => {
+  const locked = await hasLockedAnalysisForResultSet(
+		req.params.id,
+		req.user.userId
+	);
+
+	if (locked) {
+		return res.status(400).json({
+			error:
+				"This dataset has already been used in a saved statistical analysis and can no longer be updated.",
+		});
+	}
+
   try {
     const resultSet = await updateResultSetService({
       resultSetId: req.params.id,

@@ -54,6 +54,20 @@ const getResultSetByIdAndUserId = async (resultSetId, userId) => {
     },
     include: {
       experiment: true,
+			entries: {
+				include: {
+					subject: true,
+					group: true,
+				},
+				orderBy: {
+					id: "asc",
+				},
+			},
+			statisticalAnalyses: {
+				select: {
+					id: true,
+				},
+			},
     },
   });
 };
@@ -101,10 +115,22 @@ const deleteResultSetById = async (resultSetId) => {
   });
 };
 
+const hasLockedAnalysisForResultSet = async (resultSetId, userId) => {
+  const count = await prisma.statisticalAnalysis.count({
+    where: {
+      resultSetId: Number(resultSetId),
+      userId: Number(userId),
+    },
+  });
+
+  return count > 0;
+};
+
 export {
   createResultSet,
   getResultSetsByUserId,
   getResultSetByIdAndUserId,
   updateResultSetById,
-  deleteResultSetById
+  deleteResultSetById,
+	hasLockedAnalysisForResultSet
 };
