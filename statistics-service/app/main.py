@@ -34,6 +34,32 @@ def health_check():
     return {"status": "ok"}
 
 # -----------------------------
+# JSON cleaning
+
+def safe_number(value):
+    if value is None:
+        return None
+    try:
+        numeric_value = float(value)
+    except (TypeError, ValueError):
+        return None
+    if math.isnan(numeric_value) or math.isinf(numeric_value):
+        return None
+    return numeric_value
+def clean_for_json(value):
+    if isinstance(value, dict):
+        return {key: clean_for_json(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [clean_for_json(item) for item in value]
+    if isinstance(value, tuple):
+        return [clean_for_json(item) for item in value]
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, (np.floating, float)):
+        return safe_number(value)
+    return value
+
+# -----------------------------
 # Basic descriptive statistics
 
 # Average
@@ -607,6 +633,8 @@ def analyze_dataset(payload: AnalysisRequest):
             "comparisonGroups": payload.comparisonGroups,
             "error": "No analyzable numeric or survival/event values were available.",
         }
+    
+        return clean_for_json(result)
 
     return {
         "entryCount": len(payload.entries),
@@ -632,3 +660,5 @@ def analyze_dataset(payload: AnalysisRequest):
         "survivalResults": survival_results,
         "chartData": chart_data,
     }
+
+    return clean_for_json(result)
