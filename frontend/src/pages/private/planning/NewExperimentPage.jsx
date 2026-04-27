@@ -11,7 +11,7 @@ function NewExperimentPage() {
         </h1>
         <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
           Create a new experiment plan by entering the main details.
-          Additional groups and subjects can be added in later steps.
+          Additional groups, subjects and team members information can be added to already saved experiments.
         </p>
       </div>
 

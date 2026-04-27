@@ -479,7 +479,7 @@ function StatisticalAnalysisDetailPage() {
       <div>
         <Button asChild variant="outline">
           <Link to="/analysis/statistical-analyses">
-            ⮜ Back to Saved Statistical Analyses
+            ⮜ Back to saved analyses list
           </Link>
         </Button>
       </div>
@@ -730,7 +730,7 @@ function StatisticalAnalysisDetailPage() {
               onClick={openDeleteConfirm}
               disabled={isDeleting}
             >
-              Delete Analysis
+              Delete analysis
             </Button>
           </div>
         </>

@@ -54,7 +54,7 @@ function DashboardIntro() {
 
         <Card className="rounded-3xl border-slate-200 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Analysis Module</CardTitle>
+            <CardTitle className="text-lg sm:text-xl">Result Datasets / Analysis Module</CardTitle>
             <CardDescription>
               Enter, analyze, and review experimental results.
             </CardDescription>
@@ -63,20 +63,28 @@ function DashboardIntro() {
           <CardContent className="space-y-3 text-sm leading-6 text-slate-600">
             <p>
               Select{" "}
-              <span className="font-medium text-slate-900">New Analysis</span>{" "}
-              to enter fresh result data and run statistical calculations.
+              <span className="font-medium text-slate-900">New Result Dataset</span>{" "}
+              to enter fresh result data and optionally link it to existing experiment.
             </p>
-
             <p>
               Select{" "}
               <span className="font-medium text-slate-900">
-                Saved Analyses
+                Saved Result Datasets
+              </span>{" "}or{" "}
+              <span className="font-medium text-slate-900">
+                New Statistical Analysis
+              </span>{" "}
+              to open previously stored datasets and use them in statistical analysis.
+            </p>
+            <p>
+              Select{" "}
+              <span className="font-medium text-slate-900">
+                Saved Statistical Analyses
               </span>{" "}
               to open previously stored analysis results.
             </p>
-
             <p>
-              This module will support descriptive statistics, statistical tests,
+              This module supports datasets creating, descriptive statistics, statistical tests,
               and visual data outputs.
             </p>
           </CardContent>

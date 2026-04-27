@@ -123,7 +123,7 @@ function SavedExperimentsPage() {
 
 							<div className="pt-2">
 								<Button asChild variant="outline">
-								<Link to={`/planning/${experiment.id}`}>Open Detailed view</Link>
+								<Link to={`/planning/${experiment.id}`}>Open detailed view</Link>
 								</Button>
 							</div>
 

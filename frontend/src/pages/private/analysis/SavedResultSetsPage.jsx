@@ -111,7 +111,7 @@ function SavedResultSetsPage() {
                 <div className="pt-2">
                   <Button asChild variant="outline">
                     <Link to={`/analysis/result-sets/${resultSet.id}`}>
-                      Open Result Set
+                      Open result set
                     </Link>
                   </Button>
                 </div>

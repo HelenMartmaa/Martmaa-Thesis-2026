@@ -634,7 +634,7 @@ function NewExperimentForm({
 										? isExperimentLocked
 											? "Save General Notes"
 											: "Update Experiment"
-										: "Create Experiment"}
+										: "Create experiment"}
 							</Button>
 
 							<Button

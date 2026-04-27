@@ -202,7 +202,7 @@ function ExperimentGroupsSection({ experimentId, groups, setGroups, isExperiment
 
 			{isExperimentLocked && (
 				<div className="max-w-2xl mx-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-					Groups are locked because this experiment is linked to analyzed result data.
+					Groups are locked because this experiment is linked to already analyzed result data.
 				</div>
 			)}
 

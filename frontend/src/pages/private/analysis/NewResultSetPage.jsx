@@ -322,7 +322,7 @@ function NewResultSetPage() {
           onClick={handleSaveDatasetAndEntries}
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Saving..." : "Save dataset and entries"}
+          {isSubmitting ? "Saving..." : "Save result dataset"}
         </Button>
 
         <Button

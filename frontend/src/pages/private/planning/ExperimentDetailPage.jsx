@@ -288,7 +288,7 @@ function ExperimentDetailPage() {
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild variant="outline">
               <Link to={`/planning/${id}/edit`}>
-                Update Experiment Main Information
+                Update experiment main information
               </Link>
             </Button>
           </div>
@@ -376,7 +376,7 @@ function ExperimentDetailPage() {
               variant="destructive"
               onClick={openDeleteConfirm}
             >
-              Delete Experiment
+              Delete experiment
             </Button>
           </div>
 

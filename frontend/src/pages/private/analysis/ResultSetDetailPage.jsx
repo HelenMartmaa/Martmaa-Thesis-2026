@@ -181,7 +181,7 @@ function ResultSetDetailPage() {
 					<div className="flex flex-col gap-3 sm:flex-row">          
 						<Button asChild className="border-emerald-200 bg-emerald-100 hover:bg-emerald-200 text-slate-900">
 							<Link to={`/analysis/result-sets/${id}/run-analysis`}>
-								Run Statistical Analysis
+								Run statistical analysis
 							</Link>
 						</Button>
           </div>
@@ -269,7 +269,7 @@ function ResultSetDetailPage() {
               variant="destructive"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              Delete Dataset
+              Delete dataset
             </Button>
           </div>
         </div>
