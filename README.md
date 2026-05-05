@@ -176,23 +176,89 @@ Martmaa-Thesis-2026/
 ```
 ___
 ## ⚙️ Rakenduse käivitamine
-**1. Klooni projekt**
+**1. Projekti kloonimine**
 ```bash
 git clone <repo-url>
 ```
-**2. Backend**
+**2. Keskkonnamuutujad ja andmebaasi seadistamine**
+Projekt kasutab PostgreSQL andmebaasi ja Prisma ORM-i. Enne backendi käivitamist tuleb seadistada lokaalne PostgreSQL andmebaas ning `.env` fail.
+
+Paigalda arvutisse PostgreSQL:
+- Windows: https://www.postgresql.org/download/windows/
+- macOS: https://www.postgresql.org/download/macosx/
+- Linux: kasuta paketihaldurit, näiteks: ```sudo apt install postgresql postgresql-contrib```
+
+Pärast paigaldamist kontrolli, et PostgreSQL töötaks.
+
+Seejärel loo projekti jaoks PostgreSQL andmebaas. Andmebaasi saab luua terminali kaudu, näiteks:
+```bash
+createdb biomed_analysis_db
+```
+Järgmiseks loo backend-node kausta `.env` fail.
+Lisa faili järgmine sisu:
+```
+DATABASE_URL="postgresql://KASUTAJANIMI:PAROOL@localhost:5432/biomed_analysis_db"
+JWT_SECRET="muuda_see_turvaliseks_salajaseks_votmeks"
+PORT=3001
+```
+Asenda järgmised väärtused:
+```text
+KASUTAJANIMI
+PAROOL
+biomed_analysis_db
+```
+enda PostgreSQL kasutajanime, parooli ja andmebaasi nimega.
+
+**Ära lisa päris `.env` faili GitHub-i.**
+
+Seejärel paigalda backendi sõltuvused:
 ```bash
 cd backend-node
 npm install
+```
+Genereeri Prisma *client*:
+```bash
+npx prisma generate
+```
+Kui projektis on olemas Prisma migratsioonid, käivita:
+```bash
+npx prisma migrate dev
+```
+See loob Prisma skeemi põhjal vajalikud andmebaasi tabelid. 
+
+Kui soovid ainult skeemi andmebaasi lükata ilma uut migratsiooni loomata, võib kasutada:
+```bash
+npx prisma db push
+```
+Arenduskeskkonna jaoks on soovituslik:
+```bash
+npx prisma migrate dev
+```
+Valikuline: andmebaasi saab vaadata ka Prisma Studio kaudu, mis avab brauseripõhise kasutajaliidese andmebaasi vaatamiseks:
+```bash
+npx prisma studio
+```
+
+**3. Backendi käivitamine**
+```bash
+cd backend-node
 npm run dev
 ```
-**3. Frontend**
+Backend peaks käivituma aadressil:
+```text
+http://localhost:3001
+```
+**4. Frontendi käivitamine**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-**4. Python statistika mikroteenus**
+Frontend peaks käivituma aadressil:
+```text
+http://localhost:5173
+```
+**5. Python statistika mikroteenuse käivitamine**
 ```bash
 cd statistics-service
 python -m venv venv
@@ -472,19 +538,86 @@ ___
 ```bash
 git clone <repo-url>
 ```
-**2. Backend**
+**2. Environment Variables and Database Setup**
+The project uses a PostgreSQL database and Prisma ORM. Before running the backend, a local PostgreSQL database and a `.env` file must be configured.
+
+Install PostgreSQL on your computer:
+- Windows: https://www.postgresql.org/download/windows/
+- macOS: https://www.postgresql.org/download/macosx/
+- Linux: use your package manager, for example: ```sudo apt install postgresql postgresql-contrib```
+
+After installation, make sure PostgreSQL is running.
+
+Then create a PostgreSQL database for the project. 
+You can create it by using terminal, example terminal command:
+```bash
+createdb biomed_analysis_db
+```
+Then proceed with creating `.env` file inside backend-node folder.
+Add the following content to this file:
+```
+DATABASE_URL="postgresql://USERNAME:PASSWORD@localhost:5432/biomed_analysis_db"
+JWT_SECRET="change_this_to_a_secure_random_secret"
+PORT=3001
+```
+Replace following
+```text
+USERNAME
+PASSWORD
+biomed_analysis_db
+```
+with your own PostgreSQL username, password and database name.
+
+**Do not commit the real `.env` file to GitHub.**
+
+Proceed with backend dependencies installation:
 ```bash
 cd backend-node
 npm install
+```
+Then generate Prisma client:
+```bash
+npx prisma generate
+```
+If the project includes existing Prisma migrations, run:
+```bash
+npx prisma migrate dev
+```
+This creates the required database tables based on the Prisma schema. 
+
+If you only want to push the schema without creating a new migration, you can use:
+```bash
+npx prisma db push
+```
+Recommended for development setup:
+```bash
+npx prisma migrate dev
+```
+Optional: you can inspect database with Prisma Studio, it opens a browser-based interface where you can inspect the database:
+```bash
+npx prisma studio
+```
+
+**3. Start Backend**
+```bash
+cd backend-node
 npm run dev
 ```
-**3. Frontend**
+The backend should start on:
+```text
+http://localhost:3001
+```
+**4. Start Frontend**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-**4. Python Statistics Microservice**
+The frontend should start on:
+```text
+http://localhost:5173
+```
+**5. Start Python Statistics Microservice**
 ```bash
 cd statistics-service
 python -m venv venv
