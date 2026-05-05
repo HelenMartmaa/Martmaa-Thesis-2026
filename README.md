@@ -14,7 +14,7 @@ Praktikas kasutatakse biomeditsiinilistes uuringutes sageli mitut eraldiseisvat 
 - lihtsustab statistiliste analüüside teostamist.
 
 **Projekti eesmärk on pakkuda killustatud töövoo asemele lahendus, kus töövoog on koondatud ühte kasutajasõbralikku veebirakendusse.**
-____
+___
 ## Peamised funktsionaalsused
 
 **🧪 Katse planeerimine**
@@ -55,7 +55,7 @@ ____
 **👤 Külaliskasutajarežiim**
 - ei vaja sisse logimist;
 - kohene andmete analüüsimine.
-____
+___
 ## Arhitektuur
 Rakendus kasutab mikroteenustel põhinevat arhitektuuri:
 - Frontend (React);
@@ -67,7 +67,7 @@ Peamised valiku põhjused:
 - vastutusalade eraldamine (UI / äriloogika / arvutused);
 - Python statistiliste arvutuste jaoks;
 - mikroteenuse kasutamine skaleeritavuse tagamiseks.
-____
+___
 ## Tehnoloogiad
 
 **Frontend:**
@@ -89,7 +89,7 @@ ____
 - FastAPI
 - NumPy, SciPy
 - math, statistics
-____
+___
 ## Kasutaja töövoog
 **Registreeritud kasutaja**
 1. Registreerumine / sisselogimine
@@ -114,21 +114,85 @@ ____
 - Kaplan–Meieri graafikud;
 - hajuvusdiagramm kogu valimi kohta;
 - tulpdiagramm keskmise, kesmine + standardhälve, keskmine + standardviga visualiseerimiseks.
-____
+___
+## Projekti struktuur
+Ülevaade projekti põhilistest komponentidest:
+```text
+Martmaa-Thesis-2026/
+├── backend-node/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   └── schema.prisma
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── repositories/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── app.js
+│   ├── package.json
+│   └── .env
+│
+├── docs/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   │   ├── analysis/
+│   │   │   ├── auth/
+│   │   │   ├── common/
+│   │   │   ├── dashboard/
+│   │   │   ├── guest/
+│   │   │   ├── planning/
+│   │   │   └── ui/
+│   │   ├── context/
+│   │   ├── features/
+│   │   │   ├── analysis/
+│   │   │   ├── auth/
+│   │   │   └── planning/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   │   ├── private/
+│   │   │   |   ├── analysis/
+│   │   │   |   └── planning/
+│   │   │   └── public/
+│   │   ├── services/
+│   │   └── main.jsx
+│   ├── vite.config.js
+│   └── package.json
+│
+├── statistics-service/
+│   ├── app/
+│   │   └── main.py
+│   ├── venv/
+│   └── requirements.txt
+│
+├── .gitignore
+├── package/lock.json
+├── package.json
+└── README.md
+```
+___
 ## ⚙️ Rakenduse käivitamine
-**1. Backend**
+**1. Klooni projekt**
+```bash
+git clone <repo-url>
+```
+**2. Backend**
 ```bash
 cd backend-node
 npm install
 npm run dev
 ```
-**2. Frontend**
+**3. Frontend**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-**3. Python statistika mikroteenus**
+**4. Python statistika mikroteenus**
 ```bash
 cd statistics-service
 python -m venv venv
@@ -136,14 +200,78 @@ venv\Scripts\Activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
-____
+___
+## API lõpp-punktid
+**Autentimine**
+```
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
+```
+**Katsed**
+```
+GET    /api/experiments
+POST   /api/experiments
+GET    /api/experiments/:id
+PUT    /api/experiments/:id
+DELETE /api/experiments/:id
+```
+**Katserühmad**
+```
+GET    /api/experiments/:experimentId/groups
+POST   /api/experiments/:experimentId/groups
+PUT    /api/experiments/:experimentId/groups/:groupId
+DELETE /api/experiments/:experimentId/groups/:groupId
+```
+**Katsesubjektid**
+```
+GET    /api/experiments/:experimentId/subjects
+POST   /api/experiments/:experimentId/subjects
+PUT    /api/experiments/:experimentId/subjects/:subjectId
+DELETE /api/experiments/:experimentId/subjects/:subjectId
+```
+**Tiimiliikmed**
+```
+GET    /api/experiments/:experimentId/team-members
+POST   /api/experiments/:experimentId/team-members
+PUT    /api/experiments/:experimentId/team-members/:memberId
+DELETE /api/experiments/:experimentId/team-members/:memberId
+```
+**Tulemuste andmestikud**
+```
+GET    /api/result-sets
+POST   /api/result-sets
+GET    /api/result-sets/:id
+PUT    /api/result-sets/:id
+DELETE /api/result-sets/:id
+```
+**Tulemuste kirjed**
+```
+GET    /api/result-sets/:resultSetId/entries
+POST   /api/result-sets/:resultSetId/entries
+PUT    /api/result-sets/:resultSetId/entries/:entryId
+DELETE /api/result-sets/:resultSetId/entries/:entryId
+```
+**Statistilised analüüsid**
+```
+GET    /api/statistical-analyses
+POST   /api/statistical-analyses
+GET    /api/statistical-analyses/:id
+DELETE /api/statistical-analyses/:id
+```
+**Pythoni statistika mikroteenus**
+```
+GET    /health
+POST   /analyze
+```
+___
 ## Projekti tugevused
 🔗 *Full-stack* + mikroteenuste arhitektuur
 🧠 Reaalsete statistiliste meetodite rakendamine
 📊 Andmete visualiseerimine teaduslikus kontekstis
 👤 Külaliskasutaja funktsionaalsus (parem UX)
 🧪 Domeenispetsiifiline (biomeditsiin)
-____
+___
 ## Edasised arendussuunad
 - ANOVA, regressioonanalüüs, Log-rank test elulemuse andmete jaoks;
 - analüüsi tulemuste eksport (PDF, CSV);
@@ -277,27 +405,156 @@ ____
 - Kaplan-Meier survival plots
 - Scatter plot for whole selected data
 - Bar charts of mean, mean + standard deviation, mean + standard error of the mean
-____
+___
+## Project Structure
+Overview of main components:
+
+```text
+Martmaa-Thesis-2026/
+├── backend-node/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   └── schema.prisma
+│   ├── src/
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── repositories/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   └── app.js
+│   ├── package.json
+│   └── .env
+│
+├── docs/
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── components/
+│   │   │   ├── analysis/
+│   │   │   ├── auth/
+│   │   │   ├── common/
+│   │   │   ├── dashboard/
+│   │   │   ├── guest/
+│   │   │   ├── planning/
+│   │   │   └── ui/
+│   │   ├── context/
+│   │   ├── features/
+│   │   │   ├── analysis/
+│   │   │   ├── auth/
+│   │   │   └── planning/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   │   ├── private/
+│   │   │   |   ├── analysis/
+│   │   │   |   └── planning/
+│   │   │   └── public/
+│   │   ├── services/
+│   │   └── main.jsx
+│   ├── vite.config.js
+│   └── package.json
+│
+├── statistics-service/
+│   ├── app/
+│   │   └── main.py
+│   ├── venv/
+│   └── requirements.txt
+│
+├── .gitignore
+├── package/lock.json
+├── package.json
+└── README.md
+```
+___
 ## ⚙️ Running the Project
-**1. Backend**
+**1. Clone the project**
+```bash
+git clone <repo-url>
+```
+**2. Backend**
 ```bash
 cd backend-node
 npm install
 npm run dev
 ```
-**2. Frontend**
+**3. Frontend**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-**3. Python Statistics Microservice**
+**4. Python Statistics Microservice**
 ```bash
 cd statistics-service
 python -m venv venv
 venv\Scripts\Activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
+```
+___
+## API Endpoints
+**Authentication**
+```
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
+```
+**Experiments**
+```
+GET    /api/experiments
+POST   /api/experiments
+GET    /api/experiments/:id
+PUT    /api/experiments/:id
+DELETE /api/experiments/:id
+```
+**Experiment groups**
+```
+GET    /api/experiments/:experimentId/groups
+POST   /api/experiments/:experimentId/groups
+PUT    /api/experiments/:experimentId/groups/:groupId
+DELETE /api/experiments/:experimentId/groups/:groupId
+```
+**Experiment subjects**
+```
+GET    /api/experiments/:experimentId/subjects
+POST   /api/experiments/:experimentId/subjects
+PUT    /api/experiments/:experimentId/subjects/:subjectId
+DELETE /api/experiments/:experimentId/subjects/:subjectId
+```
+**Experiment team members**
+```
+GET    /api/experiments/:experimentId/team-members
+POST   /api/experiments/:experimentId/team-members
+PUT    /api/experiments/:experimentId/team-members/:memberId
+DELETE /api/experiments/:experimentId/team-members/:memberId
+```
+**Result datasets**
+```
+GET    /api/result-sets
+POST   /api/result-sets
+GET    /api/result-sets/:id
+PUT    /api/result-sets/:id
+DELETE /api/result-sets/:id
+```
+**Result entries**
+```
+GET    /api/result-sets/:resultSetId/entries
+POST   /api/result-sets/:resultSetId/entries
+PUT    /api/result-sets/:resultSetId/entries/:entryId
+DELETE /api/result-sets/:resultSetId/entries/:entryId
+```
+**Statistical analyses**
+```
+GET    /api/statistical-analyses
+POST   /api/statistical-analyses
+GET    /api/statistical-analyses/:id
+DELETE /api/statistical-analyses/:id
+```
+**Python statistics service**
+```
+GET    /health
+POST   /analyze
 ```
 ____
 ## What Makes This Project Strong
