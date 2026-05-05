@@ -266,11 +266,11 @@ POST   /analyze
 ```
 ___
 ## Projekti tugevused
-🔗 *Full-stack* + mikroteenuste arhitektuur
-🧠 Reaalsete statistiliste meetodite rakendamine
-📊 Andmete visualiseerimine teaduslikus kontekstis
-👤 Külaliskasutaja funktsionaalsus (parem UX)
-🧪 Domeenispetsiifiline (biomeditsiin)
+🔗 *Full-stack* + mikroteenuste arhitektuur<br>
+🧠 Reaalsete statistiliste meetodite rakendamine<br>
+📊 Andmete visualiseerimine teaduslikus kontekstis<br>
+👤 Külaliskasutaja funktsionaalsus (parem UX)<br>
+🧪 Domeenispetsiifiline (biomeditsiin)<br>
 ___
 ## Edasised arendussuunad
 - ANOVA, regressioonanalüüs, Log-rank test elulemuse andmete jaoks;
@@ -558,11 +558,11 @@ POST   /analyze
 ```
 ____
 ## What Makes This Project Strong
-🔗 Full-stack + microservices architecture
-🧠 Real scientific/statistical logic implemented
-📊 Data visualization with real-world use cases
-👤 Guest mode (UX-focused feature)
-🧪 Domain-specific (biomedicine)
+🔗 Full-stack + microservices architecture<br>
+🧠 Real scientific/statistical logic implemented<br>
+📊 Data visualization with real-world use cases<br>
+👤 Guest mode (UX-focused feature)<br>
+🧪 Domain-specific (biomedicine)<br>
 ____
 ## Future Improvements
 - ANOVA, regression, log-rank test
