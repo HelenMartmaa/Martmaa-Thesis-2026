@@ -14,8 +14,8 @@ const METRIC_LABELS = {
   standardDeviation: "Standard deviation",
 	standard_deviation: "Standard deviation",
   variance: "Variance",
-  standardError: "Standard error",
-	standard_error: "Standard error",
+  standardError: "Standard error of the mean",
+	standard_error: "Standard error of the mean",
   range: "Range",
 	growthRate: "Growth rate",
 	growth_rate: "Growth rate",
@@ -101,7 +101,7 @@ function GroupWiseMetricsTable({ groupStatistics }) {
             <th className="px-3 py-3 text-left font-medium">Median</th>
             <th className="px-3 py-3 text-left font-medium">SD</th>
             <th className="px-3 py-3 text-left font-medium">Variance</th>
-            <th className="px-3 py-3 text-left font-medium">SE</th>
+            <th className="px-3 py-3 text-left font-medium">SEM</th>
             <th className="px-3 py-3 text-left font-medium">Range</th>
             <th className="px-3 py-3 text-left font-medium">95% CI</th>
           </tr>
@@ -264,7 +264,6 @@ function ConfidenceIntervalsTable({ confidenceIntervals }) {
             <th className="px-3 py-3 text-left font-medium">Interval</th>
             <th className="px-3 py-3 text-left font-medium">Lower</th>
             <th className="px-3 py-3 text-left font-medium">Upper</th>
-            <th className="px-3 py-3 text-left font-medium">Notes</th>
           </tr>
         </thead>
 
@@ -279,9 +278,6 @@ function ConfidenceIntervalsTable({ confidenceIntervals }) {
               </td>
               <td className="px-3 py-3 text-slate-600">
                 {formatNumber(value.upper)}
-              </td>
-              <td className="px-3 py-3 text-slate-600">
-                {value.message || "—"}
               </td>
             </tr>
           ))}
@@ -435,6 +431,25 @@ function StatisticalAnalysisDetailPage() {
     }
   }, [analysis]);
 
+  const detectedDatasetType = useMemo(() => {
+    if (parsedMetrics.includes("kaplan_meier")) {
+      return "survival";
+    }
+
+    if (
+      parsedMetrics.includes("growth_rate") ||
+      parsedMetrics.includes("doubling_time")
+    ) {
+      return "timecourse";
+    }
+
+    return "numeric";
+  }, [parsedMetrics]);
+
+  const isNumericDataset = detectedDatasetType === "numeric";
+  const isTimecourseDataset = detectedDatasetType === "timecourse";
+  const isSurvivalDataset = detectedDatasetType === "survival";
+
 	const formattedMetricLabels = useMemo(() => {
 		return parsedMetrics.map((metric) => METRIC_LABELS[metric] || metric);
 	}, [parsedMetrics]);
@@ -560,10 +575,10 @@ function StatisticalAnalysisDetailPage() {
             </CardContent>
           </Card>
 
-					<Card className="rounded-3xl border-slate-200 shadow-sm">
+					<Card className="rounded-3xl border-sky-100 bg-sky-100 shadow-sm">
 						<CardHeader>
-							<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-								<CardTitle>Saved Result Entries</CardTitle>
+							<div className="flex flex-col text-sky-950 gap-3 sm:flex-row sm:items-center sm:justify-between">
+								<CardTitle>Analysed Result Data Entries</CardTitle>
 
 								<Button
 									type="button"
@@ -627,52 +642,59 @@ function StatisticalAnalysisDetailPage() {
 										</p>
 									</div>
 
-									<div className="space-y-2">
+{/* 									<div className="space-y-2">
 										<p className="font-medium text-slate-900">Detected groups:</p>
 										<GroupsSummaryTable groups={parsedResults.groups} />
-									</div>
+									</div> */}
 
-									{["group", "sex"].includes(parsedResults.groupingMode) && (
-										<div className="space-y-2">
-											<p className="font-medium text-slate-900">
-												Group-wise descriptive metrics:
-											</p>
-											<GroupWiseMetricsTable
-												groupStatistics={parsedResults.groupStatistics}
-											/>
-										</div>
-									)}
+                  {isNumericDataset && ["group", "sex"].includes(parsedResults.groupingMode) && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-slate-900">
+                        Group-wise descriptive metrics:
+                      </p>
+                      <GroupWiseMetricsTable
+                        groupStatistics={parsedResults.groupStatistics}
+                      />
+                    </div>
+                  )}
 
-									<div className="space-y-2">
-										<p className="font-medium text-slate-900">
-											{["group", "sex"].includes(parsedResults.groupingMode)
-												? "Descriptive metrics for whole dataset:"
-												: "Descriptive metrics:"}
-										</p>
-										<DescriptiveMetricsTable metrics={parsedResults.descriptiveMetrics} />
-									</div>
+                  {isNumericDataset && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-slate-900">
+                        {["group", "sex"].includes(parsedResults.groupingMode)
+                          ? "Descriptive metrics for whole dataset:"
+                          : "Descriptive metrics:"}
+                      </p>
+                      <DescriptiveMetricsTable metrics={parsedResults.descriptiveMetrics} />
+                    </div>
+                  )}
 
-									<div className="space-y-2">
-										<p className="font-medium text-slate-900">Confidence intervals:</p>
-										<ConfidenceIntervalsTable
-											confidenceIntervals={parsedResults.confidenceIntervals}
-										/>
-									</div>
+                  {isNumericDataset && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-slate-900">Confidence intervals:</p>
+                      <ConfidenceIntervalsTable
+                        confidenceIntervals={parsedResults.confidenceIntervals}
+                      />
+                    </div>
+                  )}
 
-									{parsedResults.growthResults &&
-										Object.keys(parsedResults.growthResults).length > 0 && (
-											<div className="space-y-2">
-												<p className="font-medium text-slate-900">
-													Growth and doubling time results:
-												</p>
-												<GrowthResultsTable growthResults={parsedResults.growthResults} />
-											</div>
-										)}
+                  {isTimecourseDataset &&
+                    parsedResults.growthResults &&
+                    Object.keys(parsedResults.growthResults).length > 0 && (
+                      <div className="space-y-2">
+                        <p className="font-medium text-slate-900">
+                          Growth and doubling time results:
+                        </p>
+                        <GrowthResultsTable growthResults={parsedResults.growthResults} />
+                      </div>
+                    )}
 
-									<div className="space-y-2">
-										<p className="font-medium text-slate-900">Statistical tests:</p>
-										<StatisticalTestsTable tests={parsedResults.tests} />
-									</div>
+                  {isNumericDataset && (
+                    <div className="space-y-2">
+                      <p className="font-medium text-slate-900">Statistical tests:</p>
+                      <StatisticalTestsTable tests={parsedResults.tests} />
+                    </div>
+                  )}
 								</>
 							)}
 						</CardContent>

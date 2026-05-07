@@ -48,6 +48,29 @@ function ChartBlock({ title, description, children }) {
   );
 }
 
+function getUniqueGroups(data = []) {
+  return [...new Set(data.map((item) => item.group || "all"))];
+}
+
+function getGroupColor(index) {
+  const colors = [
+    "#334155",
+    "#2563eb",
+    "#16a34a",
+    "#dc2626",
+    "#9333ea",
+    "#ea580c",
+    "#0891b2",
+    "#4f46e5",
+  ];
+
+  return colors[index % colors.length];
+}
+
+function filterByGroup(data, groupName) {
+  return data.filter((item) => (item.group || "all") === groupName);
+}
+
 function AnalysisChartsSection({
   chartData,
   measurementName,
@@ -69,8 +92,18 @@ function AnalysisChartsSection({
 
   const chartTitleBase = measurementName || "Measured values";
   const yAxisLabel = getYAxisLabel(measurementUnit);
-
   const commonCartesianGrid = <CartesianGrid strokeDasharray="3 3" />;
+
+  const scatterGroups = getUniqueGroups(chartData.scatter);
+  const timecourseGroups = getUniqueGroups(chartData.timecourse);
+  const kaplanMeierGroups = getUniqueGroups(chartData.kaplanMeier);
+  const scatterXDomain = chartData.scatter?.length
+    ? [1, chartData.scatter.length]
+    : [0, 1];
+
+  const validGroupMeans = (chartData.groupMeans || []).filter(
+    (item) => item.mean !== null && item.mean !== undefined
+  );
 
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
@@ -82,14 +115,17 @@ function AnalysisChartsSection({
         {chartData.scatter?.length > 0 && (
           <ChartBlock
             title={`${chartTitleBase} — Scatter Plot`}
-            description="Shows each saved numeric result entry as an individual point."
+            description="Shows each numeric result entry as an individual point."
           >
             <ScatterChart margin={{ top: 10, right: 25, left: 45, bottom: 55 }}>
               {commonCartesianGrid}
 
               <XAxis
+                type="number"
                 dataKey="x"
                 name="Entry index"
+                domain={scatterXDomain}
+                allowDecimals={false}
                 tickMargin={10}
                 label={{
                   value: "Entry index",
@@ -99,6 +135,7 @@ function AnalysisChartsSection({
               />
 
               <YAxis
+                type="number"
                 dataKey="y"
                 name={yAxisLabel}
                 tickMargin={10}
@@ -113,18 +150,25 @@ function AnalysisChartsSection({
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Scatter name={chartTitleBase} data={chartData.scatter} />
+              {scatterGroups.map((groupName, index) => (
+                <Scatter
+                  key={groupName}
+                  name={groupName === "all" ? chartTitleBase : groupName}
+                  data={filterByGroup(chartData.scatter, groupName)}
+                  fill={getGroupColor(index)}
+                />
+              ))}
             </ScatterChart>
           </ChartBlock>
         )}
 
-        {chartData.groupMeans?.length > 0 && (
+        {validGroupMeans.length > 0 && (
           <ChartBlock
             title={`${chartTitleBase} — Group Means`}
             description="Shows the arithmetic mean for each detected group."
           >
             <BarChart
-              data={chartData.groupMeans}
+              data={validGroupMeans}
               margin={{ top: 10, right: 25, left: 45, bottom: 75 }}
             >
               {commonCartesianGrid}
@@ -151,18 +195,18 @@ function AnalysisChartsSection({
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Bar dataKey="mean" name="Mean" fill="#94a3b8"/>
+              <Bar dataKey="mean" name="Mean" fill="#339e63" maxBarSize={120} />
             </BarChart>
           </ChartBlock>
         )}
 
-        {chartData.groupMeans?.length > 0 && (
+        {validGroupMeans.length > 0 && (
           <ChartBlock
             title={`${chartTitleBase} — Group Means ± SD`}
             description="Shows group means with standard deviation error bars."
           >
             <BarChart
-              data={chartData.groupMeans}
+              data={validGroupMeans}
               margin={{ top: 10, right: 25, left: 45, bottom: 75 }}
             >
               {commonCartesianGrid}
@@ -189,20 +233,20 @@ function AnalysisChartsSection({
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Bar dataKey="mean" name="Mean" fill="#94a3b8">
-                <ErrorBar dataKey="sd" width={8} />
+              <Bar dataKey="mean" name="Mean" fill="#339e63" maxBarSize={120}>
+                <ErrorBar dataKey="sd" width={8} strokeWidth={2} />
               </Bar>
             </BarChart>
           </ChartBlock>
         )}
 
-        {chartData.groupMeans?.length > 0 && (
+        {validGroupMeans.length  > 0 && (
           <ChartBlock
             title={`${chartTitleBase} — Group Means ± SEM`}
             description="Shows group means with standard error of the mean error bars."
           >
             <BarChart
-              data={chartData.groupMeans}
+              data={validGroupMeans}
               margin={{ top: 10, right: 25, left: 45, bottom: 75 }}
             >
               {commonCartesianGrid}
@@ -229,8 +273,8 @@ function AnalysisChartsSection({
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Bar dataKey="mean" name="Mean" fill="#94a3b8">
-                <ErrorBar dataKey="sem" width={8} />
+              <Bar dataKey="mean" name="Mean" fill="#339e63" maxBarSize={120}>
+                <ErrorBar dataKey="sem" width={8} strokeWidth={2} />
               </Bar>
             </BarChart>
           </ChartBlock>
@@ -238,16 +282,14 @@ function AnalysisChartsSection({
 
         {chartData.timecourse?.length > 0 && (
           <ChartBlock
-            title={`${chartTitleBase} — Growth / Timecourse`}
-            description="Shows numeric values across recorded timepoints."
+            title={`${chartTitleBase} — Growth / Time-course`}
+            description="Shows numeric values across recorded timepoints. If groups are available, each group is shown as a separate line."
           >
-            <LineChart
-              data={chartData.timecourse}
-              margin={{ top: 10, right: 25, left: 45, bottom: 55 }}
-            >
+            <LineChart margin={{ top: 10, right: 25, left: 45, bottom: 55 }}>
               {commonCartesianGrid}
 
               <XAxis
+                type="number"
                 dataKey="time"
                 tickMargin={10}
                 label={{
@@ -255,9 +297,11 @@ function AnalysisChartsSection({
                   position: "bottom",
                   offset: 25,
                 }}
+                allowDuplicatedCategory={false}
               />
 
               <YAxis
+                type="number"
                 tickMargin={10}
                 label={{
                   value: yAxisLabel,
@@ -270,13 +314,18 @@ function AnalysisChartsSection({
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Line
-                type="monotone"
-                dataKey="value"
-                name={chartTitleBase}
-                dot
-                connectNulls={false}
-              />
+              {timecourseGroups.map((groupName, index) => (
+                <Line
+                  key={groupName}
+                  type="monotone"
+                  data={filterByGroup(chartData.timecourse, groupName)}
+                  dataKey="value"
+                  name={groupName === "all" ? chartTitleBase : groupName}
+                  stroke={getGroupColor(index)}
+                  dot
+                  connectNulls={false}
+                />
+              ))}
             </LineChart>
           </ChartBlock>
         )}
@@ -284,45 +333,50 @@ function AnalysisChartsSection({
         {chartData.kaplanMeier?.length > 0 && (
           <ChartBlock
             title={`${chartTitleBase} — Kaplan-Meier Survival Curve`}
-            description="Shows estimated survival probability over time."
+            description="Shows estimated survival probability over time. If groups are available, each group is shown as a separate step curve."
           >
-            <LineChart
-              data={chartData.kaplanMeier}
-              margin={{ top: 10, right: 25, left: 45, bottom: 55 }}
-            >
+            <LineChart margin={{ top: 10, right: 25, left: 55, bottom: 65 }}>
               {commonCartesianGrid}
 
               <XAxis
+                type="number"
                 dataKey="time"
                 tickMargin={10}
                 label={{
                   value: "Timepoint",
                   position: "bottom",
-                  offset: 25,
+                  offset: 30,
                 }}
+                allowDuplicatedCategory={false}
               />
 
               <YAxis
+                type="number"
                 domain={[0, 1]}
                 tickMargin={10}
                 label={{
                   value: "Survival probability",
                   angle: -90,
                   position: "left",
-                  offset: 15,
+                  offset: 20,
                 }}
               />
 
               <Tooltip />
               <Legend verticalAlign="top" height={30} />
 
-              <Line
-                type="stepAfter"
-                dataKey="survival"
-                name="Survival probability"
-                dot
-                connectNulls={false}
-              />
+              {kaplanMeierGroups.map((groupName, index) => (
+                <Line
+                  key={groupName}
+                  type="stepAfter"
+                  data={filterByGroup(chartData.kaplanMeier, groupName)}
+                  dataKey="survival"
+                  name={groupName === "all" ? "Survival probability" : groupName}
+                  stroke={getGroupColor(index)}
+                  dot
+                  connectNulls={false}
+                />
+              ))}
             </LineChart>
           </ChartBlock>
         )}

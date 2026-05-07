@@ -66,6 +66,13 @@ function ResultEntriesEditorSection({
     setRows((prev) => [...prev, createEmptyRow()]);
   };
 
+  const addTenRows = () => {
+    setRows((prev) => [
+      ...prev,
+      ...Array.from({ length: 10 }, () => createEmptyRow()),
+    ]);
+  };
+
   const removeRow = (indexToRemove) => {
     setRows((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
@@ -493,6 +500,15 @@ function ResultEntriesEditorSection({
             className="border-emerald-200 bg-emerald-100 hover:text-emerald-800"
           >
             + Add row
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addTenRows}
+            className="border-emerald-200 bg-emerald-100 hover:text-emerald-800"
+          >
+            + Add 10 rows
           </Button>
 
           <Button type="button" variant="outline" onClick={clearBatch}>

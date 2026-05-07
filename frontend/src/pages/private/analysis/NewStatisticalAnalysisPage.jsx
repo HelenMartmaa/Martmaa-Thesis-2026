@@ -39,7 +39,7 @@ const METRIC_OPTIONS = [
   },
   {
     value: "standard_error",
-    label: "Standard error",
+    label: "Standard error of the mean",
     requires: "numeric",
   },
   {
@@ -124,32 +124,55 @@ function NewStatisticalAnalysisPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const detectedDatasetType = useMemo(() => {
+    if (datasetCapabilities.hasSurvivalData) {
+      return "survival";
+    }
+
+    if (
+      datasetCapabilities.hasNumericData &&
+      datasetCapabilities.hasTimepointData
+    ) {
+      return "timecourse";
+    }
+
+    if (datasetCapabilities.hasNumericData) {
+      return "numeric";
+    }
+
+    return "unknown";
+  }, [
+    datasetCapabilities.hasNumericData,
+    datasetCapabilities.hasTimepointData,
+    datasetCapabilities.hasSurvivalData,
+  ]);
+
   const hasTwoGroupTestSelected = formData.selectedTests.some((test) =>
     ["student_t_test", "mann_whitney_u"].includes(test)
   );
 
   const isMetricAvailable = (option) => {
-    if (option.requires === "numeric") {
-      return datasetCapabilities.hasNumericData;
+    if (detectedDatasetType === "numeric") {
+      return option.requires === "numeric";
     }
 
-    if (option.requires === "timepoint") {
-      return datasetCapabilities.hasNumericData && datasetCapabilities.hasTimepointData;
+    if (detectedDatasetType === "timecourse") {
+      return option.value === "growth_rate" || option.value === "doubling_time";
     }
 
-    if (option.requires === "survival") {
-      return datasetCapabilities.hasSurvivalData;
+    if (detectedDatasetType === "survival") {
+      return option.value === "kaplan_meier";
     }
 
-    return true;
+    return false;
   };
 
   const isTestAvailable = (option) => {
-    if (option.requires === "numeric") {
-      return datasetCapabilities.hasNumericData;
+    if (detectedDatasetType === "numeric") {
+      return option.requires === "numeric";
     }
 
-    return true;
+    return false;
   };
 
   const visibleMetricOptions = METRIC_OPTIONS.filter(isMetricAvailable);
@@ -339,12 +362,7 @@ function NewStatisticalAnalysisPage() {
         visibleTestOptions.some((option) => option.value === test)
       ),
     }));
-  }, [
-    datasetCapabilities.hasNumericData,
-    datasetCapabilities.hasGroupData,
-    datasetCapabilities.hasTimepointData,
-    datasetCapabilities.hasSurvivalData,
-  ]);
+  }, [detectedDatasetType]);
 
   const toggleMetric = (metricValue) => {
     setFormData((prev) => ({
@@ -361,6 +379,34 @@ function NewStatisticalAnalysisPage() {
       selectedTests: prev.selectedTests.includes(testValue)
         ? prev.selectedTests.filter((item) => item !== testValue)
         : [...prev.selectedTests, testValue],
+    }));
+  };
+
+  const selectAllVisibleMetrics = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedMetrics: visibleMetricOptions.map((option) => option.value),
+    }));
+  };
+
+  const clearAllMetrics = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedMetrics: [],
+    }));
+  };
+
+  const selectAllVisibleTests = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedTests: visibleTestOptions.map((option) => option.value),
+    }));
+  };
+
+  const clearAllTests = () => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedTests: [],
     }));
   };
 
@@ -682,6 +728,13 @@ function NewStatisticalAnalysisPage() {
 
           <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
             <p className="font-medium">Detected dataset type:</p>
+            
+            <p className="mt-1">
+              {detectedDatasetType === "numeric" && "Numeric values dataset"}
+              {detectedDatasetType === "timecourse" && "Time-course / growth dataset"}
+              {detectedDatasetType === "survival" && "Survival / event dataset"}
+              {detectedDatasetType === "unknown" && "No analyzable dataset type detected"}
+            </p>
 
             <ul className="mt-2 space-y-1">
               {datasetCapabilities.hasNumericData && (
@@ -842,9 +895,21 @@ function NewStatisticalAnalysisPage() {
                 )}
 
               <div className="space-y-3">
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-slate-700 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   Descriptive metrics
                 </p>
+
+                {visibleMetricOptions.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleMetrics}>
+                      Select all
+                    </Button>
+
+                    <Button type="button" variant="outline" onClick={clearAllMetrics}>
+                      Clear
+                    </Button>
+                  </div>
+                )}
 
                 {visibleMetricOptions.length === 0 ? (
                   <p className="text-sm text-slate-500">
@@ -880,6 +945,19 @@ function NewStatisticalAnalysisPage() {
                   Two-group tests require grouping mode "By group" or "By sex"
                   and exactly two valid groups.
                 </p>
+
+                
+                {visibleTestOptions.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleTests}>
+                      Select all
+                    </Button>
+
+                    <Button type="button" variant="outline" onClick={clearAllTests}>
+                      Clear
+                    </Button>
+                  </div>
+                )}
 
                 {visibleTestOptions.length === 0 ? (
                   <p className="text-sm text-slate-500">

@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import GuestModeNotice from "../../components/guest/GuestModeNotice";
-import AnalysisInputSection from "../../components/analysis/AnalysisInputSection";
 import { useEffect, useState } from "react";
 import AnalysisChartsSection from "../../components/analysis/AnalysisChartsSection";
+import AnalysisResultsDisplay from "../../components/analysis/AnalysisResultsDisplay";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -22,7 +21,7 @@ const METRIC_OPTIONS_BY_TYPE = {
     { value: "median", label: "Median" },
     { value: "standard_deviation", label: "Standard deviation" },
     { value: "variance", label: "Variance" },
-    { value: "standard_error", label: "Standard error" },
+    { value: "standard_error", label: "Standard error of the mean" },
     { value: "range", label: "Range" },
   ],
 
@@ -44,14 +43,13 @@ const TEST_OPTIONS_BY_TYPE = {
   ],
 
   timecourse: [],
-
   survival: [],
 };
 
 function GuestAnalysisPage() {
   const [measurementName, setMeasurementName] = useState("");
   const [measurementUnit, setMeasurementUnit] = useState("");
-  const [entryType, setEntryType] = useState("numeric"); 
+  const [entryType, setEntryType] = useState("numeric");
   const [groupingMode, setGroupingMode] = useState("none");
 
   const [rows, setRows] = useState([createEmptyRow()]);
@@ -140,8 +138,61 @@ function GuestAnalysisPage() {
     setRows((prev) => [...prev, createEmptyRow()]);
   };
 
+  const addTenRows = () => {
+    setRows((prev) => [
+      ...prev,
+      ...Array.from({ length: 10 }, () => createEmptyRow()),
+    ]);
+  };
+
   const removeRow = (indexToRemove) => {
     setRows((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleNumericValueChange = (index, rawValue) => {
+    let value = rawValue;
+
+    value = value.replace(/[−–—]/g, "-");
+    const shouldBeNegative = value.startsWith("-");
+    value = value.replace(/[^0-9.]/g, "");
+
+    const parts = value.split(".");
+    value = parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
+
+    if (shouldBeNegative) {
+      value = "-" + value;
+    }
+
+    if (value === "-.") {
+      value = "-";
+    }
+
+    value = value.slice(0, 12);
+
+    updateRow(index, "numericValue", value);
+  };
+
+  const handleTimepointValueChange = (index, rawValue) => {
+    let value = rawValue;
+
+    value = value.replace(/[−–—]/g, "-");
+    const shouldBeNegative = value.startsWith("-");
+    value = value.replace(/[^0-9.]/g, "");
+
+    const parts = value.split(".");
+    value = parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
+
+    if (shouldBeNegative) {
+      value = "-" + value;
+    }
+
+    if (value === "-.") {
+      value = "-";
+    }
+
+    value = value.slice(0, 12);
+
+    updateRow(index, "timepointValue", value);
   };
 
   const clearGuestData = () => {
@@ -173,39 +224,55 @@ function GuestAnalysisPage() {
     );
   };
 
-const validateGuestData = () => {
-  if (rows.length === 0) {
-    return "At least one row is required.";
-  }
+  const selectAllVisibleMetrics = () => {
+    setSelectedMetrics(availableMetricOptions.map((option) => option.value));
+  };
 
-  for (const row of rows) {
-    if (entryType !== "survival") {
-      if (row.numericValue === "") {
-        return "Each numeric/time-course row must include a numeric value.";
+  const clearAllMetrics = () => {
+    setSelectedMetrics([]);
+  };
+
+  const selectAllVisibleTests = () => {
+    setSelectedTests(availableTestOptions.map((option) => option.value));
+  };
+
+  const clearAllTests = () => {
+    setSelectedTests([]);
+  };
+
+  const validateGuestData = () => {
+    if (rows.length === 0) {
+      return "At least one row is required.";
+    }
+
+    for (const row of rows) {
+      if (entryType !== "survival") {
+        if (row.numericValue === "") {
+          return "Each numeric/time-course row must include a numeric value.";
+        }
+
+        if (!Number.isFinite(Number(row.numericValue))) {
+          return "Numeric values must be valid numbers.";
+        }
       }
 
-      if (!Number.isFinite(Number(row.numericValue))) {
-        return "Numeric values must be valid numbers.";
+      if (entryType !== "numeric") {
+        if (row.timepointValue === "") {
+          return "Each time-course/survival row must include a timepoint value.";
+        }
+
+        if (!Number.isFinite(Number(row.timepointValue))) {
+          return "Timepoint values must be valid numbers.";
+        }
       }
     }
 
-    if (entryType !== "numeric") {
-      if (row.timepointValue === "") {
-        return "Each time-course/survival row must include a timepoint value.";
-      }
-
-      if (!Number.isFinite(Number(row.timepointValue))) {
-        return "Timepoint values must be valid numbers.";
-      }
+    if (selectedMetrics.length === 0 && selectedTests.length === 0) {
+      return "Please select at least one metric or test.";
     }
-  }
 
-  if (selectedMetrics.length === 0 && selectedTests.length === 0) {
-    return "Please select at least one metric or test.";
-  }
-
-  return "";
-};
+    return "";
+  };
 
   const handleRunGuestAnalysis = async () => {
     setError("");
@@ -220,6 +287,17 @@ const validateGuestData = () => {
 
     try {
       setIsRunning(true);
+
+      const metricsToSend =
+        entryType === "timecourse"
+          ? selectedMetrics.filter((metric) =>
+              ["growth_rate", "doubling_time"].includes(metric)
+            )
+          : entryType === "survival"
+          ? selectedMetrics.filter((metric) => metric === "kaplan_meier")
+          : selectedMetrics;
+
+      const testsToSend = entryType === "numeric" ? selectedTests : [];
 
       const entries = rows.map((row) => ({
         numericValue:
@@ -243,8 +321,8 @@ const validateGuestData = () => {
         body: JSON.stringify({
           analysisName: "Guest analysis",
           groupingMode,
-          selectedMetrics,
-          selectedTests,
+          selectedMetrics: metricsToSend,
+          selectedTests: testsToSend,
           comparisonGroups: [],
           filters: {},
           chartConfig: {},
@@ -274,6 +352,7 @@ const validateGuestData = () => {
             <Link to="/">⮜ Back to Main Page</Link>
           </Button>
         </div>
+
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
             Guest Statistical Analysis
@@ -373,18 +452,6 @@ const validateGuestData = () => {
                 <tbody className="divide-y divide-slate-200 bg-white">
                   {rows.map((row, index) => (
                     <tr key={index}>
-                      {entryType !== "survival" && (
-                        <td className="px-3 py-3 align-middle">
-                          <Input
-                            value={row.numericValue}
-                            onChange={(event) =>
-                              updateRow(index, "numericValue", event.target.value)
-                            }
-                            placeholder="Value"
-                          />
-                        </td>
-                      )}
-
                       {entryType === "survival" && (
                         <td className="px-3 py-3 align-middle text-center">
                           <input
@@ -403,9 +470,21 @@ const validateGuestData = () => {
                           <Input
                             value={row.timepointValue}
                             onChange={(event) =>
-                              updateRow(index, "timepointValue", event.target.value)
+                              handleTimepointValueChange(index, event.target.value)
                             }
                             placeholder="Timepoint"
+                          />
+                        </td>
+                      )}
+
+                      {entryType !== "survival" && (
+                        <td className="px-3 py-3 align-middle">
+                          <Input
+                            value={row.numericValue}
+                            onChange={(event) =>
+                              handleNumericValueChange(index, event.target.value)
+                            }
+                            placeholder="Value"
                           />
                         </td>
                       )}
@@ -447,7 +526,7 @@ const validateGuestData = () => {
                       <td className="px-3 py-3 align-middle">
                         <Button
                           type="button"
-                          variant="outline"
+                          variant="destructive"
                           onClick={() => removeRow(index)}
                           disabled={rows.length === 1}
                         >
@@ -461,8 +540,22 @@ const validateGuestData = () => {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button type="button" variant="outline" onClick={addRow}>
+              <Button
+                className="border-emerald-200 bg-emerald-100 hover:text-emerald-800"
+                type="button"
+                variant="outline"
+                onClick={addRow}
+              >
                 + Add row
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addTenRows}
+                className="border-emerald-200 bg-emerald-100 hover:text-emerald-800"
+              >
+                + Add 10 rows
               </Button>
 
               <Button type="button" variant="outline" onClick={clearGuestData}>
@@ -494,7 +587,22 @@ const validateGuestData = () => {
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700">Metrics</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-slate-700">Metrics</p>
+
+                {availableMetricOptions.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={selectAllVisibleMetrics}>
+                      Select all
+                    </Button>
+
+                    <Button type="button" variant="outline" onClick={clearAllMetrics}>
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div className="grid gap-3 sm:grid-cols-2">
                 {availableMetricOptions.map((option) => (
                   <label
@@ -513,28 +621,43 @@ const validateGuestData = () => {
             </div>
 
             <div className="space-y-3">
-              <p className="text-sm font-medium text-slate-700">Tests</p>
-              {availableTestOptions.length === 0 ? (
-                  <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500">
-                    No statistical tests are currently available for this dataset type.
-                  </p>
-                ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {availableTestOptions.map((option) => (
-                      <label
-                        key={option.value}
-                        className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedTests.includes(option.value)}
-                          onChange={() => toggleTest(option.value)}
-                        />
-                        {option.label}
-                      </label>
-                    ))}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm font-medium text-slate-700">Tests</p>
+
+                {availableTestOptions.length > 0 && (
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={selectAllVisibleTests}>
+                      Select all
+                    </Button>
+
+                    <Button type="button" variant="outline" onClick={clearAllTests}>
+                      Clear
+                    </Button>
                   </div>
                 )}
+              </div>
+
+              {availableTestOptions.length === 0 ? (
+                <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-500">
+                  No statistical tests are currently available for this dataset type.
+                </p>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {availableTestOptions.map((option) => (
+                    <label
+                      key={option.value}
+                      className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedTests.includes(option.value)}
+                        onChange={() => toggleTest(option.value)}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -545,7 +668,7 @@ const validateGuestData = () => {
             onClick={handleRunGuestAnalysis}
             disabled={isRunning}
           >
-            {isRunning ? "Running analysis..." : "Run guest analysis"}
+            {isRunning ? "Running analysis..." : "Run analysis"}
           </Button>
         </div>
 
@@ -563,9 +686,7 @@ const validateGuestData = () => {
               </CardHeader>
 
               <CardContent className="space-y-3 text-sm text-slate-600">
-                <pre className="max-h-105 overflow-auto rounded-2xl bg-slate-950 p-4 text-xs text-slate-100">
-                  {JSON.stringify(results, null, 2)}
-                </pre>
+                <AnalysisResultsDisplay results={results} datasetType={entryType} />
               </CardContent>
             </Card>
 
@@ -578,8 +699,6 @@ const validateGuestData = () => {
             )}
           </>
         )}
-
-
       </section>
     </main>
   );
