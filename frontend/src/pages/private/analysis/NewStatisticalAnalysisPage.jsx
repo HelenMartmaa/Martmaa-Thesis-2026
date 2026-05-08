@@ -552,8 +552,8 @@ function NewStatisticalAnalysisPage() {
             }
           >
             {resultSetId
-              ? "⮜ Back to Result Set Details"
-              : "⮜ Back to Saved Result Datasets"}
+              ? "⮜ Back to result set details"
+              : "⮜ Back to saved result datasets"}
           </Link>
         </Button>
       </div>
@@ -897,10 +897,10 @@ function NewStatisticalAnalysisPage() {
               <div className="space-y-3">
                 <p className="text-sm font-medium text-slate-700 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   Descriptive metrics
-                </p>
+                
 
                 {visibleMetricOptions.length > 0 && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 justify-end">
                     <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleMetrics}>
                       Select all
                     </Button>
@@ -910,6 +910,7 @@ function NewStatisticalAnalysisPage() {
                     </Button>
                   </div>
                 )}
+                </p>
 
                 {visibleMetricOptions.length === 0 ? (
                   <p className="text-sm text-slate-500">
@@ -937,28 +938,26 @@ function NewStatisticalAnalysisPage() {
               </div>
 
               <div className="space-y-3">
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-slate-700 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   Statistical tests
+
+                  {visibleTestOptions.length > 0 && (
+                    <div className="flex gap-2 justify-end">
+                      <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleTests}>
+                        Select all
+                      </Button>
+
+                      <Button type="button" variant="outline" onClick={clearAllTests}>
+                        Clear
+                      </Button>
+                    </div>
+                  )}
                 </p>
 
                 <p className="text-xs text-slate-500">
                   Two-group tests require grouping mode "By group" or "By sex"
                   and exactly two valid groups.
                 </p>
-
-                
-                {visibleTestOptions.length > 0 && (
-                  <div className="flex gap-2">
-                    <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleTests}>
-                      Select all
-                    </Button>
-
-                    <Button type="button" variant="outline" onClick={clearAllTests}>
-                      Clear
-                    </Button>
-                  </div>
-                )}
-
                 {visibleTestOptions.length === 0 ? (
                   <p className="text-sm text-slate-500">
                     No statistical tests are available for this dataset.

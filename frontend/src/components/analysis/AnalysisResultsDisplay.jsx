@@ -270,7 +270,7 @@ function StatisticalTestsTable({ tests }) {
               <td className="px-3 py-3 text-slate-600">
                 {value.comparisonGroups?.length === 2 && (
                   <span className="block">
-                    Compared: {value.comparisonGroups[0]} vs{" "}
+                    <strong>Compared:</strong> {value.comparisonGroups[0]} vs{" "}
                     {value.comparisonGroups[1]}
                   </span>
                 )}

@@ -2,10 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useAuth from "../../../features/auth/useAuth";
 import { getSavedExperimentsRequest } from "../../../features/planning/planningApi";
-import {
-  getResultSetByIdRequest,
-  updateResultSetRequest,
-} from "../../../features/analysis/resultSetApi";
+import { getResultSetByIdRequest, updateResultSetRequest } from "../../../features/analysis/resultSetApi";
 import {
   getResultEntriesRequest,
   createResultEntryRequest,
@@ -100,25 +97,6 @@ function EditResultSetPage() {
     loadExperiments();
   }, [token]);
 
-	const detectedSurvivalAnalysis = loadedEntries.some(
-		(entry) =>
-			entry.timepointValue !== null &&
-			entry.timepointValue !== undefined &&
-			(entry.eventOccurred === 0 || entry.eventOccurred === 1)
-	);
-
-	const detectedTimecourseAnalysis = loadedEntries.some(
-		(entry) =>
-			entry.numericValue !== null &&
-			entry.numericValue !== undefined &&
-			entry.timepointValue !== null &&
-			entry.timepointValue !== undefined &&
-			entry.eventOccurred === null
-	);
-
-	setIsSurvivalAnalysis(detectedSurvivalAnalysis);
-	setIsTimecourseAnalysis(detectedTimecourseAnalysis);
-
 	const selectedExperiment = useMemo(() => {
 		return experiments.find(
 			(experiment) => String(experiment.id) === String(formData.experimentId)
@@ -152,12 +130,22 @@ function EditResultSetPage() {
 
         const detectedSurvivalAnalysis = loadedEntries.some(
           (entry) =>
-            (entry.timepointValue !== null && entry.timepointValue !== undefined) ||
-            entry.eventOccurred === 0 ||
-            entry.eventOccurred === 1
+            entry.timepointValue !== null &&
+            entry.timepointValue !== undefined &&
+            (entry.eventOccurred === 0 || entry.eventOccurred === 1)
+        );
+
+        const detectedTimecourseAnalysis = loadedEntries.some(
+          (entry) =>
+            entry.numericValue !== null &&
+            entry.numericValue !== undefined &&
+            entry.timepointValue !== null &&
+            entry.timepointValue !== undefined &&
+            entry.eventOccurred === null
         );
 
         setIsSurvivalAnalysis(detectedSurvivalAnalysis);
+        setIsTimecourseAnalysis(detectedTimecourseAnalysis);
 
         if (loadedEntries.length > 0) {
           setRows(
@@ -312,12 +300,22 @@ function EditResultSetPage() {
 
       const detectedSurvivalAnalysis = refreshedEntries.some(
         (entry) =>
-          (entry.timepointValue !== null && entry.timepointValue !== undefined) ||
-          entry.eventOccurred === 0 ||
-          entry.eventOccurred === 1
+          entry.timepointValue !== null &&
+          entry.timepointValue !== undefined &&
+          (entry.eventOccurred === 0 || entry.eventOccurred === 1)
+      );
+
+      const detectedTimecourseAnalysis = refreshedEntries.some(
+        (entry) =>
+          entry.numericValue !== null &&
+          entry.numericValue !== undefined &&
+          entry.timepointValue !== null &&
+          entry.timepointValue !== undefined &&
+          entry.eventOccurred === null
       );
 
       setIsSurvivalAnalysis(detectedSurvivalAnalysis);
+      setIsTimecourseAnalysis(detectedTimecourseAnalysis);
 
       if (refreshedEntries.length > 0) {
         setRows(
@@ -358,7 +356,7 @@ function EditResultSetPage() {
       <div>
         <Button asChild variant="outline">
           <Link to={`/analysis/result-sets/${id}`}>
-            ⮜ Back to Result Set Details
+            ⮜ Back to result set details
           </Link>
         </Button>
       </div>

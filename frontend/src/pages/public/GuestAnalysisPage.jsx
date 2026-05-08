@@ -592,7 +592,7 @@ function GuestAnalysisPage() {
 
                 {availableMetricOptions.length > 0 && (
                   <div className="flex gap-2">
-                    <Button type="button" variant="outline" onClick={selectAllVisibleMetrics}>
+                    <Button className="bg-rose-100" type="button" variant="outline" onClick={selectAllVisibleMetrics}>
                       Select all
                     </Button>
 

@@ -196,7 +196,7 @@ function StatisticalTestsTable({ tests }) {
               <td className="px-3 py-3 text-slate-600">
                 {value.comparisonGroups?.length === 2 && (
                   <span className="block">
-                    Compared: {value.comparisonGroups[0]} vs{" "}
+                    <strong>Compared:</strong> {value.comparisonGroups[0]} vs{" "}
                     {value.comparisonGroups[1]}
                   </span>
                 )}
@@ -552,10 +552,20 @@ function StatisticalAnalysisDetailPage() {
                 <span className="font-medium text-slate-900">Created at:</span>{" "}
                 {new Date(analysis.createdAt).toLocaleString()}
               </p>
+
+              {analysis.resultSet?.experimentId && (
+                <div className="flex justify-start">
+                  <Button asChild variant="outline" size="sm" className="w-fit">
+                    <Link to={`/planning/${analysis.resultSet.experimentId}`}>
+                      View linked experiment
+                    </Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-					<Card className="rounded-3xl border-sky-100 bg-sky-100 shadow-sm">
+					<Card className="rounded-3xl border-emerald-100 bg-emerald-50 shadow-sm">
 						<CardHeader>
 							<CardTitle className="text-sky-950">
 								Selected Metrics and Tests
