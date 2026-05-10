@@ -87,7 +87,7 @@ ___
 **Statistika mikroteenus:**
 - Python
 - FastAPI
-- NumPy, SciPy
+- NumPy, SciPy, Pydantic
 - math, statistics
 ___
 ## Kasutaja töövoog
@@ -444,7 +444,7 @@ ____
 **Statistics Microservice:**
 - Python
 - FastAPI
-- NumPy, SciPy
+- NumPy, SciPy, Pydantic
 - math, statistics
 ____
 ## User Workflow
