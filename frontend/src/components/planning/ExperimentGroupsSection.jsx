@@ -425,24 +425,6 @@ function ExperimentGroupsSection({ experimentId, groups, setGroups, isExperiment
 											</Button>
 										</div>
 									)}
-
-{/*                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => startEditing(group)}
-                    >
-                      Update
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => handleDelete(group.id)}
-                    >
-                      Delete
-                    </Button>
-                  </div> */}
                 </div>
               )}
             </div>

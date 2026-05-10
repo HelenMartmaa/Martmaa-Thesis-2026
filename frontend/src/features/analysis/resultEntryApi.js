@@ -55,9 +55,4 @@ const deleteResultEntryRequest = async (resultSetId, entryId, token) => {
   return response.data;
 };
 
-export {
-  getResultEntriesRequest,
-  createResultEntryRequest,
-  updateResultEntryRequest,
-  deleteResultEntryRequest
-};
+export { getResultEntriesRequest, createResultEntryRequest, updateResultEntryRequest, deleteResultEntryRequest };

@@ -651,7 +651,7 @@ function StatisticalAnalysisDetailPage() {
 											{parsedResults.groupCount ?? "—"}
 										</p>
 									</div>
-
+{/* Currently not needed here, but maybe will be added back */}
 {/* 									<div className="space-y-2">
 										<p className="font-medium text-slate-900">Detected groups:</p>
 										<GroupsSummaryTable groups={parsedResults.groups} />

@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import useAuth from "../../features/auth/useAuth";
-import {
-  createResultEntryRequest,
-  getResultEntriesRequest,
-} from "../../features/analysis/resultEntryApi";
-import {
-  getExperimentGroupsRequest,
-  getExperimentSubjectsRequest,
-} from "../../features/planning/planningApi";
+import { createResultEntryRequest, getResultEntriesRequest } from "../../features/analysis/resultEntryApi";
+import { getExperimentGroupsRequest, getExperimentSubjectsRequest } from "../../features/planning/planningApi";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

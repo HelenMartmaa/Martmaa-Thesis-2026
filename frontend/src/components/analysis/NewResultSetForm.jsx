@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import useAuth from "../../features/auth/useAuth";
-import {
-  createResultSetRequest,
-  updateResultSetRequest,
-} from "../../features/analysis/resultSetApi";
+import { createResultSetRequest, updateResultSetRequest } from "../../features/analysis/resultSetApi";
 import { getSavedExperimentsRequest } from "../../features/planning/planningApi";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";

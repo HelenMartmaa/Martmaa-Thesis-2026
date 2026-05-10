@@ -197,25 +197,6 @@ function ResultEntriesEditorSection({
     updateRow(index, "timepointValue", value);
   };
 
-/* 	const handleTimepointValueChange = (index, rawValue) => {
-		let value = rawValue.replace(/[−–—]/g, "-");
-		value = value.replace(/[^0-9.-]/g, "");
-
-		const isNegative = value.startsWith("-");
-		value = value.replace(/-/g, "");
-
-		const parts = value.split(".");
-		value = parts[0] + (parts.length > 1 ? "." + parts.slice(1).join("") : "");
-
-		if (isNegative) {
-			value = "-" + value;
-		}
-
-		value = value.slice(0, 12);
-
-		updateRow(index, "timepointValue", value);
-	}; */
-
   return (
     <Card className="rounded-3xl border-slate-200 shadow-sm">
       <CardHeader>

@@ -71,5 +71,5 @@ export {
   getResultSetByIdRequest,
   updateResultSetRequest,
   deleteResultSetRequest,
-	getResultSetsRequest,
+	getResultSetsRequest
 };

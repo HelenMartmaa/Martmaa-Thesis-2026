@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-/* import { ArrowUpIcon } from "lucide-react"; */
 
 // Floating button for quickly returning to the top of long pages
 function BackToTopButton() {
@@ -38,7 +37,6 @@ function BackToTopButton() {
         aria-label="Back to top"
       >
         ⮝
-        {/* <ArrowUpIcon /> */}
       </Button>
     </div>
   );
